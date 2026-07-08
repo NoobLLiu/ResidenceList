@@ -13,6 +13,7 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.permissions.PermissionGroup;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -111,18 +112,9 @@ public class CreateResidenceUI extends GUI {
                         return;
                     }
 
-                    // 等效 /res create：resadmin=false, deductMoney=true
-                    boolean success = Residence.getInstance().getResidenceManager()
-                            .addResidence(player, name, false, true);
-
-                    if (success) {
-                        PluginMessages.CREATE.SUCCESS.sendTo(player, name);
-                        PluginMessages.CREATE.SUCCESS_SOUND.playTo(player);
-                        ResidenceListUI.open(player, owner);
-                    } else {
-                        PluginMessages.CREATE.FAILED_SOUND.playTo(player);
-                        CreateResidenceUI.open(player, owner);
-                    }
+                    // 等效 /res create <name>：通过Bukkit命令分发触发所有Residence原生检查
+                    Bukkit.dispatchCommand(player, "res create " + name);
+                    ResidenceListUI.open(player, owner);
                 });
             }
         });
