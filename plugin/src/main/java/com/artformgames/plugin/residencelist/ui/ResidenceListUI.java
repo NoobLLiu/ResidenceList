@@ -105,7 +105,8 @@ public class ResidenceListUI extends AutoPagedGUI {
             case RATINGS -> CONFIG.ITEMS.SORT_BY_RATINGS;
         };
 
-        setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
+        // 排序按钮 slot 46
+        setItem(46, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (type.isRightClick()) {
@@ -120,7 +121,23 @@ public class ResidenceListUI extends AutoPagedGUI {
             }
         });
 
-        setItem(45, new GUIItem(CONFIG.ITEMS.CREATE.get(getViewer())) {
+        // 自动选取开关 slot 45
+        boolean autoSelectEnabled = Residence.getInstance().getAutoSelectionManager()
+                .getList().containsKey(getViewer().getUniqueId());
+        ConfiguredItem autoSelectItem = autoSelectEnabled
+                ? CONFIG.ITEMS.AUTO_SELECT_ENABLED : CONFIG.ITEMS.AUTO_SELECT_DISABLED;
+        setItem(45, new GUIItem(autoSelectItem.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                clicker.closeInventory();
+                Residence.getInstance().getAutoSelectionManager().switchAutoSelection(clicker);
+                ResidenceListUI.open(clicker, owner);
+            }
+        });
+
+        // 创建领地按钮 slot 53
+        setItem(53, new GUIItem(CONFIG.ITEMS.CREATE.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -279,6 +296,29 @@ public class ResidenceListUI extends AutoPagedGUI {
                             "&7Make sure you have selected an area first.",
                             "&7",
                             "&a ▶ Click &8|&f Create a new residence"
+                    ).build();
+
+            ConfiguredItem AUTO_SELECT_ENABLED = ConfiguredItem.create()
+                    .defaultType(Material.EMERALD)
+                    .defaultName("&a&lAuto select &2&l[ON]")
+                    .defaultLore(
+                            "&7",
+                            "&7Auto select tool is &aenabled&7.",
+                            "&7Your selection will expand automatically",
+                            "&7as you move around.",
+                            "&7",
+                            "&a ▶ Click &8|&f Disable auto select"
+                    ).build();
+
+            ConfiguredItem AUTO_SELECT_DISABLED = ConfiguredItem.create()
+                    .defaultType(Material.REDSTONE)
+                    .defaultName("&c&lAuto select &4&l[OFF]")
+                    .defaultLore(
+                            "&7",
+                            "&7Auto select tool is &cdisabled&7.",
+                            "&7Use the selection tool to select manually.",
+                            "&7",
+                            "&a ▶ Click &8|&f Enable auto select"
                     ).build();
 
             ConfiguredItem SORT_BY_RATINGS = ConfiguredItem.create()
