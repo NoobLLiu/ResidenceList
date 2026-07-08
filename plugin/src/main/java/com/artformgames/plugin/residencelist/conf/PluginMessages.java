@@ -206,6 +206,30 @@ public interface PluginMessages extends Configuration {
                 .build();
     }
 
+    interface CREATE extends Configuration {
+        ConfiguredSound ASK_SOUND = ConfiguredSound.of(Sound.ENTITY_CHICKEN_EGG, 0.5F);
+        ConfiguredSound SUCCESS_SOUND = ConfiguredSound.of(Sound.BLOCK_LEVER_CLICK, 0.5F);
+        ConfiguredSound FAILED_SOUND = ConfiguredSound.of(Sound.ENTITY_VILLAGER_NO, 0.5F);
+
+        ConfiguredMessage<BaseComponent[]> NOTIFY = value()
+                .defaults(
+                        "&fYou are creating a new residence, please enter the name in chat.",
+                        "&fMake sure you have selected an area with the residence selection tool first.",
+                        "&fYou can enter '&e#cancel&f' to cancel this operation."
+                ).build();
+
+        ConfiguredMessage<BaseComponent[]> NO_SELECTION = value()
+                .defaults(
+                        "&c&lSorry! &fYou need to select an area first with the residence selection tool!",
+                        "&fUse the selection tool to select two points before creating a residence."
+                ).build();
+
+        ConfiguredMessage<BaseComponent[]> SUCCESS = value()
+                .defaults("&a&lSuccess! &fYou have successfully created residence &e%(residence)&f!")
+                .params("residence")
+                .build();
+    }
+
 
 }
 

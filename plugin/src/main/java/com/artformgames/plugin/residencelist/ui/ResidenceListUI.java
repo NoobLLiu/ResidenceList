@@ -15,7 +15,9 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
+import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
+import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -115,6 +117,41 @@ public class ResidenceListUI extends AutoPagedGUI {
                     getPlayerData().setSortFunction(getPlayerData().getSortFunction().next());
                     open(clicker, owner);
                 }
+            }
+        });
+
+        setItem(45, new GUIItem(CONFIG.ITEMS.CREATE.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                clicker.closeInventory();
+
+                if (!Residence.getInstance().getSelectionManager().hasPlacedBoth(clicker)) {
+                    PluginMessages.CREATE.NO_SELECTION.sendTo(clicker);
+                    PluginMessages.CREATE.FAILED_SOUND.playTo(clicker);
+                    return;
+                }
+
+                PluginMessages.CREATE.NOTIFY.sendTo(clicker);
+                PluginMessages.CREATE.ASK_SOUND.playTo(clicker);
+                EditHandler.start(clicker, (player, content) -> {
+                    if (content.isBlank()) {
+                        PluginMessages.CREATE.FAILED_SOUND.playTo(player);
+                        return;
+                    }
+
+                    boolean resadmin = player.hasPermission("residence.admin");
+                    boolean success = Residence.getInstance().getResidenceManager()
+                            .addResidence(player, content, resadmin);
+
+                    if (success) {
+                        PluginMessages.CREATE.SUCCESS.sendTo(player, content);
+                        PluginMessages.CREATE.SUCCESS_SOUND.playTo(player);
+                    } else {
+                        PluginMessages.CREATE.FAILED_SOUND.playTo(player);
+                    }
+                    ResidenceListUI.open(player, owner);
+                });
             }
         });
     }
@@ -232,6 +269,17 @@ public class ResidenceListUI extends AutoPagedGUI {
                     .defaultName("&7Residence owned by &f%(owner)")
                     .defaultLore("&7", "&a ▶ Click &8|&f See all residences")
                     .params("owner").build();
+
+            ConfiguredItem CREATE = ConfiguredItem.create()
+                    .defaultType(Material.WRITABLE_BOOK)
+                    .defaultName("&a&lCreate residence")
+                    .defaultLore(
+                            "&7",
+                            "&7Create a new residence from your selection.",
+                            "&7Make sure you have selected an area first.",
+                            "&7",
+                            "&a ▶ Click &8|&f Create a new residence"
+                    ).build();
 
             ConfiguredItem SORT_BY_RATINGS = ConfiguredItem.create()
                     .defaultType(Material.LADDER)
