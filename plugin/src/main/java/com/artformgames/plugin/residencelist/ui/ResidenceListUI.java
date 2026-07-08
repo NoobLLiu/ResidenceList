@@ -15,7 +15,6 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
@@ -105,8 +104,8 @@ public class ResidenceListUI extends AutoPagedGUI {
             case RATINGS -> CONFIG.ITEMS.SORT_BY_RATINGS;
         };
 
-        // 排序按钮 slot 46
-        setItem(46, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
+        // 排序按钮 slot 53（恢复原位）
+        setItem(53, new GUIItem(sortItem.get(getViewer(), (getPlayerData().isSortReversed() ? "⬇" : "⬆"))) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (type.isRightClick()) {
@@ -121,54 +120,13 @@ public class ResidenceListUI extends AutoPagedGUI {
             }
         });
 
-        // 自动选取开关 slot 45
-        boolean autoSelectEnabled = Residence.getInstance().getAutoSelectionManager()
-                .getList().containsKey(getViewer().getUniqueId());
-        ConfiguredItem autoSelectItem = autoSelectEnabled
-                ? CONFIG.ITEMS.AUTO_SELECT_ENABLED : CONFIG.ITEMS.AUTO_SELECT_DISABLED;
-        setItem(45, new GUIItem(autoSelectItem.get(getViewer())) {
+        // 创建领地入口按钮 slot 45（打开创建页面）
+        setItem(45, new GUIItem(CONFIG.ITEMS.CREATE.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
                 clicker.closeInventory();
-                Residence.getInstance().getAutoSelectionManager().switchAutoSelection(clicker);
-                ResidenceListUI.open(clicker, owner);
-            }
-        });
-
-        // 创建领地按钮 slot 53
-        setItem(53, new GUIItem(CONFIG.ITEMS.CREATE.get(getViewer())) {
-            @Override
-            public void onClick(Player clicker, ClickType type) {
-                if (!type.isLeftClick()) return;
-                clicker.closeInventory();
-
-                if (!Residence.getInstance().getSelectionManager().hasPlacedBoth(clicker)) {
-                    PluginMessages.CREATE.NO_SELECTION.sendTo(clicker);
-                    PluginMessages.CREATE.FAILED_SOUND.playTo(clicker);
-                    return;
-                }
-
-                PluginMessages.CREATE.NOTIFY.sendTo(clicker);
-                PluginMessages.CREATE.ASK_SOUND.playTo(clicker);
-                EditHandler.start(clicker, (player, content) -> {
-                    if (content.isBlank()) {
-                        PluginMessages.CREATE.FAILED_SOUND.playTo(player);
-                        return;
-                    }
-
-                    boolean resadmin = player.hasPermission("residence.admin");
-                    boolean success = Residence.getInstance().getResidenceManager()
-                            .addResidence(player, content, resadmin);
-
-                    if (success) {
-                        PluginMessages.CREATE.SUCCESS.sendTo(player, content);
-                        PluginMessages.CREATE.SUCCESS_SOUND.playTo(player);
-                    } else {
-                        PluginMessages.CREATE.FAILED_SOUND.playTo(player);
-                    }
-                    ResidenceListUI.open(player, owner);
-                });
+                CreateResidenceUI.open(clicker, owner);
             }
         });
     }
@@ -296,29 +254,6 @@ public class ResidenceListUI extends AutoPagedGUI {
                             "&7Make sure you have selected an area first.",
                             "&7",
                             "&a ▶ Click &8|&f Create a new residence"
-                    ).build();
-
-            ConfiguredItem AUTO_SELECT_ENABLED = ConfiguredItem.create()
-                    .defaultType(Material.EMERALD)
-                    .defaultName("&a&lAuto select &2&l[ON]")
-                    .defaultLore(
-                            "&7",
-                            "&7Auto select tool is &aenabled&7.",
-                            "&7Your selection will expand automatically",
-                            "&7as you move around.",
-                            "&7",
-                            "&a ▶ Click &8|&f Disable auto select"
-                    ).build();
-
-            ConfiguredItem AUTO_SELECT_DISABLED = ConfiguredItem.create()
-                    .defaultType(Material.REDSTONE)
-                    .defaultName("&c&lAuto select &4&l[OFF]")
-                    .defaultLore(
-                            "&7",
-                            "&7Auto select tool is &cdisabled&7.",
-                            "&7Use the selection tool to select manually.",
-                            "&7",
-                            "&a ▶ Click &8|&f Enable auto select"
                     ).build();
 
             ConfiguredItem SORT_BY_RATINGS = ConfiguredItem.create()

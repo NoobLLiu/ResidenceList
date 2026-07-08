@@ -12,6 +12,7 @@ import com.artformgames.plugin.residencelist.hooker.PluginExpansion;
 import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.artformgames.plugin.residencelist.listener.ResidenceListener;
 import com.artformgames.plugin.residencelist.listener.UserListener;
+import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import com.artformgames.plugin.residencelist.storage.DataStorage;
 import com.artformgames.plugin.residencelist.storage.yaml.YAMLStorage;
 import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
@@ -57,6 +58,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
         registerListener(new EditHandler());
         registerListener(new ResidenceListener());
         registerListener(new UserListener());
+        registerListener(new AnvilNameInput());
 
         log("Register commands...");
         registerCommand("ResidenceList", new UserCommands(this));

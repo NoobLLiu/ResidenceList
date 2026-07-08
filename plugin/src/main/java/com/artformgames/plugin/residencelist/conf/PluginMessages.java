@@ -228,6 +228,18 @@ public interface PluginMessages extends Configuration {
                 .defaults("&a&lSuccess! &fYou have successfully created residence &e%(residence)&f!")
                 .params("residence")
                 .build();
+
+        ConfiguredMessage<String> ANVIL_TITLE = ConfiguredMessage.asString()
+                .defaults("&a&l输入领地名称")
+                .build();
+
+        ConfiguredMessage<String> ANVIL_DEFAULT = ConfiguredMessage.asString()
+                .defaults("myresidence")
+                .build();
+
+        ConfiguredMessage<BaseComponent[]> ANVIL_OPEN = value()
+                .defaults("&f请在铁砧界面中输入领地名称，取出结果物品即可完成创建。")
+                .build();
     }
 
 
