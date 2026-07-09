@@ -15,7 +15,7 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.listener.EditHandler;
+import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
 import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
@@ -151,9 +151,8 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 }
 
                 boolean recommend = type.isLeftClick();
-                PluginMessages.COMMENT.NOTIFY.sendTo(clicker, getResidenceData().getDisplayName());
                 PluginMessages.COMMENT.ASK_SOUND.playTo(clicker);
-                EditHandler.start(clicker, (player, content) -> {
+                AnvilNameInput.open(clicker, "评价领地 - 输入留言", "", (player, content) -> {
                     getResidenceData().modify(d -> d.addRate(content, recommend, getViewer().getUniqueId()));
                     open(player, getResidenceData(), previousGUI);
                     if (recommend) {

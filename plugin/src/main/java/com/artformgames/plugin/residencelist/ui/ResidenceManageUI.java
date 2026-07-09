@@ -15,7 +15,7 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.listener.EditHandler;
+import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
@@ -131,11 +131,8 @@ public class ResidenceManageUI extends AutoPagedGUI {
                         openGUI(player);
                     }));
                 } else if (type.isLeftClick()) {
-                    clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
-                    PluginMessages.EDIT.NAME.sendTo(getViewer(), getResidenceData().getDisplayName());
-                    EditHandler.start(getViewer(), (player, content) -> {
-                        setItem(11, generateIcon(getPlayerData(), getResidenceData().getResidence()));
+                    AnvilNameInput.open(getViewer(), "设置领地别名", "", (player, content) -> {
                         if (content.length() > 16) {
                             PluginMessages.EDIT.NAME_TOO_LONG.sendTo(player);
                             PluginMessages.EDIT.FAILED_SOUND.playTo(player);
@@ -144,19 +141,15 @@ public class ResidenceManageUI extends AutoPagedGUI {
                         getResidenceData().modify(d -> d.setNickname(content));
                         PluginMessages.EDIT.NAME_UPDATED.sendTo(player, getResidenceData().getDisplayName());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                        loadIcon();
-                        openGUI(player);
+                        open(getViewer(), getResidenceData(), previousGUI);
                     });
                 } else if (type.isRightClick()) {
-                    clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
-                    PluginMessages.EDIT.DESCRIPTION.sendTo(getViewer(), getResidenceData().getDisplayName());
-                    EditHandler.start(getViewer(), (player, content) -> {
+                    AnvilNameInput.open(getViewer(), "编辑领地描述", "", (player, content) -> {
                         getResidenceData().modify(d -> d.setDescription(content.split("\\\\n")));
                         PluginMessages.EDIT.DESCRIPTION_UPDATED.sendTo(player, getResidenceData().getDisplayName());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                        loadIcon();
-                        openGUI(player);
+                        open(getViewer(), getResidenceData(), previousGUI);
                     });
                 }
             }

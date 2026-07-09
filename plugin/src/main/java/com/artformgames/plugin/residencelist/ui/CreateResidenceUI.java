@@ -6,7 +6,7 @@ import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.utils.ColorParser;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.listener.EditHandler;
+import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.permissions.PermissionGroup;
@@ -82,7 +82,7 @@ public class CreateResidenceUI extends GUI {
             }
         });
 
-        // ===== 按钮3: 第三步 - 输入名称并确认购买（点击进入聊天输入）=====
+        // ===== 按钮3: 第三步 - 输入名称并确认购买（点击进入铁砧输入）=====
         setItem(24, new GUIItem(hasSelection
                 ? buildStep3ReadyItem()
                 : buildStep3NotReadyItem()) {
@@ -95,10 +95,8 @@ public class CreateResidenceUI extends GUI {
                     return;
                 }
 
-                clicker.closeInventory();
-                PluginMessages.CREATE.NOTIFY.sendTo(clicker);
                 PluginMessages.CREATE.ASK_SOUND.playTo(clicker);
-                EditHandler.start(clicker, (player, content) -> {
+                AnvilNameInput.open(clicker, "创建领地 - 输入名称", "", (player, content) -> {
                     if (content == null || content.isBlank()) {
                         PluginMessages.CREATE.FAILED_SOUND.playTo(player);
                         return;
