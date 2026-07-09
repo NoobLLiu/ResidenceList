@@ -44,16 +44,14 @@ public class CreateResidenceUI extends GUI {
     }
 
     public void initItems() {
-        // 步骤指引（左侧列）
+        // ===== 步骤指引区（上方）=====
         setItem(11, new GUIItem(CONFIG.ITEMS.STEP_1.get(viewer)));
-        setItem(20, new GUIItem(CONFIG.ITEMS.STEP_2.get(viewer)));
-        setItem(29, new GUIItem(CONFIG.ITEMS.STEP_3.get(viewer)));
+        setItem(13, new GUIItem(buildSelectionInfoItem()));
+        setItem(15, new GUIItem(CONFIG.ITEMS.STEP_2.get(viewer)));
+        setItem(22, new GUIItem(CONFIG.ITEMS.STEP_3.get(viewer)));
 
-        // 选区信息展示（中间）
-        setItem(22, new GUIItem(buildSelectionInfoItem()));
-
-        // 底部按钮栏
-        // 按钮1: 自动选取开关 (slot 45)
+        // ===== 底部操作栏 =====
+        // 自动选取开关 (slot 45)
         boolean autoEnabled = Residence.getInstance().getAutoSelectionManager()
                 .getList().containsKey(viewer.getUniqueId());
         ConfiguredItem autoItem = autoEnabled
@@ -68,7 +66,7 @@ public class CreateResidenceUI extends GUI {
             }
         });
 
-        // 按钮2: 确认选取范围和价格 (slot 49)
+        // 查看选区信息/刷新 (slot 49)
         setItem(49, new GUIItem(buildConfirmPriceItem()) {
             @Override
             public void onClick(Player clicker, ClickType type) {
@@ -77,7 +75,7 @@ public class CreateResidenceUI extends GUI {
             }
         });
 
-        // 返回列表按钮 (slot 48)
+        // 返回列表 (slot 48)
         setItem(48, new GUIItem(CONFIG.ITEMS.BACK.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
@@ -87,7 +85,7 @@ public class CreateResidenceUI extends GUI {
             }
         });
 
-        // 按钮3: 确认购买 (slot 53)
+        // 确认购买/创建领地 (slot 53)
         boolean hasSelection = Residence.getInstance().getSelectionManager().hasPlacedBoth(viewer);
         setItem(53, new GUIItem(hasSelection
                 ? CONFIG.ITEMS.PURCHASE_ENABLED.get(viewer)
@@ -141,7 +139,6 @@ public class CreateResidenceUI extends GUI {
         boolean economyEnabled = Residence.getInstance().getConfigManager().enableEconomy();
         boolean chargeOnCreation = Residence.getInstance().getConfigManager().isChargeOnCreation();
 
-        // 构建动态信息物品
         ItemStack item = new ItemStack(Material.MAP);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -174,8 +171,6 @@ public class CreateResidenceUI extends GUI {
             int maxCount = rPlayer.getMaxRes();
             lore.add("§f领地数量: §e" + currentCount + "§7/" + maxCount);
 
-            lore.add("§7");
-            lore.add("§a ▶ 点击 §8|§f 刷新信息");
             meta.setLore(lore);
             item.setItemMeta(meta);
         }
@@ -203,7 +198,6 @@ public class CreateResidenceUI extends GUI {
         boolean economyEnabled = Residence.getInstance().getConfigManager().enableEconomy();
         boolean chargeOnCreation = Residence.getInstance().getConfigManager().isChargeOnCreation();
 
-        // 物品名称直接显示价格信息
         ItemStack item = new ItemStack(Material.GOLD_INGOT);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -212,9 +206,9 @@ public class CreateResidenceUI extends GUI {
                 String formatted = Residence.getInstance().getEconomyManager() != null
                         ? Residence.getInstance().getEconomyManager().format(cost)
                         : String.format("%.2f", cost);
-                priceText = "§a§l确认范围和价格 §7(" + formatted + ")";
+                priceText = "§a§l查看选区信息 §7(" + formatted + ")";
             } else {
-                priceText = "§a§l确认范围和价格 §7(免费)";
+                priceText = "§a§l查看选区信息 §7(免费)";
             }
             meta.setDisplayName(priceText);
 
@@ -228,6 +222,9 @@ public class CreateResidenceUI extends GUI {
                         : String.format("%.2f", cost);
                 lore.add("§f预计费用: §e" + formatted);
             }
+            int currentCount = rPlayer.getResAmount();
+            int maxCount = rPlayer.getMaxRes();
+            lore.add("§f领地数量: §e" + currentCount + "§7/" + maxCount);
             lore.add("§7");
             lore.add("§a ▶ 点击 §8|§f 刷新选区信息");
             meta.setLore(lore);
@@ -252,18 +249,17 @@ public class CreateResidenceUI extends GUI {
                             "&7",
                             "&7使用领地选取工具（铲子/木斧）",
                             "&7左键和右键分别选取两个对角点",
-                            "&7或者使用下方的 &a自动选取工具 &7开关",
+                            "&7或使用下方的 &a自动选取工具 &7开关",
                             "&7走动时自动扩展选区范围"
                     ).build();
 
             ConfiguredItem STEP_2 = ConfiguredItem.create()
                     .defaultType(Material.GOLD_INGOT)
-                    .defaultName("&e&l第二步 &7|&f 确认范围和价格")
+                    .defaultName("&e&l第二步 &7|&f 查看选区信息")
                     .defaultLore(
                             "&7",
-                            "&7查看中间的信息面板确认选区",
-                            "&7或鼠标悬停 &a确认范围和价格 &7按钮",
-                            "&7查看选区尺寸和创建费用",
+                            "&7鼠标悬停 &a查看选区信息 &7按钮",
+                            "&7确认选区尺寸和创建费用",
                             "&7",
                             "&7如果费用不足，请重新选取区域"
                     ).build();
@@ -273,7 +269,7 @@ public class CreateResidenceUI extends GUI {
                     .defaultName("&e&l第三步 &7|&f 命名并购买")
                     .defaultLore(
                             "&7",
-                            "&7确认选区无误后，点击 &a确认购买 &7按钮",
+                            "&7确认选区无误后，点击 &a创建领地 &7按钮",
                             "&7在弹出的铁砧界面中输入领地名称",
                             "&7取出结果物品即可完成创建",
                             "&7",
@@ -313,23 +309,23 @@ public class CreateResidenceUI extends GUI {
                             "&a ▶ 点击 §8|§f 开启自动选取"
                     ).build();
 
-            // 确认价格按钮（无选区时）
+            // 查看选区信息按钮（无选区时）
             ConfiguredItem CONFIRM_PRICE_EMPTY = ConfiguredItem.create()
                     .defaultType(Material.GOLD_NUGGET)
-                    .defaultName("&7&l确认范围和价格 &8(无选区)")
+                    .defaultName("&7&l查看选区信息 &8(无选区)")
                     .defaultLore(
                             "&7",
-                            "&c请先选取区域后再确认价格"
+                            "&c请先选取区域后再查看信息"
                     ).build();
 
-            // 确认购买按钮
+            // 创建领地按钮
             ConfiguredItem PURCHASE_ENABLED = ConfiguredItem.create()
                     .defaultType(Material.EMERALD)
-                    .defaultName("&a&l确认购买")
+                    .defaultName("&a&l创建领地")
                     .defaultLore(
                             "&7",
                             "&7选区已就绪！",
-                            "&7点击后将在铁砧界面输入领地名称",
+                            "&7点击后在铁砧界面输入领地名称",
                             "&7并扣除相应费用完成创建",
                             "&7",
                             "&a ▶ 点击 §8|§f 开始创建"
@@ -337,10 +333,10 @@ public class CreateResidenceUI extends GUI {
 
             ConfiguredItem PURCHASE_DISABLED = ConfiguredItem.create()
                     .defaultType(Material.BARRIER)
-                    .defaultName("&c&l确认购买 &7(未选取)")
+                    .defaultName("&c&l创建领地 &7(未选取)")
                     .defaultLore(
                             "&7",
-                            "&c请先选取区域后再购买"
+                            "&c请先选取区域后再创建"
                     ).build();
 
             // 返回按钮

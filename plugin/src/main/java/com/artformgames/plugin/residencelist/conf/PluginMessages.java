@@ -213,19 +213,19 @@ public interface PluginMessages extends Configuration {
 
         ConfiguredMessage<BaseComponent[]> NOTIFY = value()
                 .defaults(
-                        "&fYou are creating a new residence, please enter the name in chat.",
-                        "&fMake sure you have selected an area with the residence selection tool first.",
-                        "&fYou can enter '&e#cancel&f' to cancel this operation."
+                        "&f你正在创建新的领地, 请在聊天栏输入领地名称.",
+                        "&f请确保你已经用领地选取工具选好了区域.",
+                        "&f你可以输入 '&e#cancel&f' 来取消操作."
                 ).build();
 
         ConfiguredMessage<BaseComponent[]> NO_SELECTION = value()
                 .defaults(
-                        "&c&lSorry! &fYou need to select an area first with the residence selection tool!",
-                        "&fUse the selection tool to select two points before creating a residence."
+                        "&c&l抱歉! &f你需要先用领地选取工具选取区域!",
+                        "&f请使用选取工具选择两个对角点后再创建领地."
                 ).build();
 
         ConfiguredMessage<BaseComponent[]> SUCCESS = value()
-                .defaults("&a&lSuccess! &fYou have successfully created residence &e%(residence)&f!")
+                .defaults("&a&l成功! &f你成功创建了领地 &e%(residence)&f!")
                 .params("residence")
                 .build();
 
@@ -238,7 +238,7 @@ public interface PluginMessages extends Configuration {
                 .build();
 
         ConfiguredMessage<BaseComponent[]> ANVIL_OPEN = value()
-                .defaults("&f请在铁砧界面中输入领地名称，取出结果物品即可完成创建。")
+                .defaults("&f请在铁砧界面中输入领地名称, 取出结果物品即可完成创建.")
                 .build();
     }
 
