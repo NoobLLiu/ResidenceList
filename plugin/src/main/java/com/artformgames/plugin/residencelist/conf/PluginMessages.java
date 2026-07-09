@@ -37,55 +37,55 @@ public interface PluginMessages extends Configuration {
     }
 
     ConfiguredMessage<BaseComponent[]> LOAD_FAILED = value()
-            .defaults("&c&lSorry! &fBut your residence data failed to load, please rejoin!")
+            .defaults("&c&l抱歉! &f由于你的领地数据加载失败，请尝试重新加入或联系管理员!")
             .build();
 
     interface COMMAND extends Configuration {
 
         ConfiguredMessage<BaseComponent[]> USER = value()
                 .defaults(
-                        "&e&lResidenceList &fCommands &7(/reslist)",
-                        "&8#&f open &e[player]",
-                        "&8-&7 Open the residence list gui.",
-                        "&8#&f info &e<residence>",
-                        "&8-&7 Display the residence info",
-                        "&8#&f edit &e<residence>",
-                        "&8-&7 Open the residence edit gui"
+                        "&e&lResidenceList &f指令提示 &7(/reslist)",
+                        "&8#&f open &e[玩家]",
+                        "&8-&7 打开主页面",
+                        "&8#&f info &e<领地名称>",
+                        "&8-&7 查看该领地的详细信息",
+                        "&8#&f edit &e<领地名称>",
+                        "&8-&7 打开领地信息编辑页面"
                 ).build();
 
         ConfiguredMessage<BaseComponent[]> ADMIN = value()
                 .defaults(
-                        "&e&lResidenceList &fAdmin Commands &7(/reslistadmin)",
-                        "&8#&f open &e[player]",
-                        "&8-&7 Open the admin manage GUI.",
-                        "&8#&f edit &e<residence>",
-                        "&8-&7 Open the residence edit gui",
+                        "&e&lResidenceList &f管理员指令提示 &7(/reslistadmin)",
+                        "&8#&f open &e[玩家]",
+                        "&8-&7 以管理员身份打开主界面",
+                        "&8#&f edit &e<领地名称>",
+                        "&8-&7 以管理员身份打开领地信息编辑页面",
                         "&8#&f reload",
-                        "&8-&7 Reload the configuration file."
+                        "&8-&7 重载配置文件"
                 ).build();
 
         ConfiguredMessage<BaseComponent[]> NO_PERMISSION = value()
-                .defaults("&c&lSorry! &fBut you dont have enough permissions to do that!")
+                .defaults("&c&l抱歉! &f你没有权限这样做!")
                 .build();
 
         ConfiguredMessage<BaseComponent[]> ONLY_PLAYER = value()
-                .defaults("&c&lSorry! &fBut this command only can be executed by a player!")
+                .defaults("&c&l抱歉! &f该指令只能由玩家执行!")
                 .build();
 
 
         ConfiguredMessage<BaseComponent[]> NOT_EXISTS = value()
-                .defaults("&c&lSorry! &fThere is currently no residence with name &e#%(residence) &f!")
+                .defaults("&c&l抱歉! &f没有名称为 &e#%(residence) &f的领地!")
                 .params("residence")
                 .build();
 
         ConfiguredMessage<BaseComponent[]> UNKNOWN_PLAYER = value()
-                .defaults("&c&lSorry! &fThere is currently no player named &e#%(name) &f!")
+                .defaults("&c&l抱歉! &f没有名称为 &e#%(name) &f的玩家!")
                 .params("name")
                 .build();
 
 
         ConfiguredMessage<BaseComponent[]> NOT_OWNER = value()
-                .defaults("&c&lSorry! &fBut you are not the owner of residence &e#%(residence) &f!")
+                .defaults("&c&l抱歉! &f你不是领地 &e#%(residence) &f的主人!")
                 .params("residence", "residence_nickname").build();
 
 
@@ -94,16 +94,16 @@ public interface PluginMessages extends Configuration {
     interface RELOAD extends Configuration {
 
         ConfiguredMessage<BaseComponent[]> START = value()
-                .defaults("&fReloading the plugin configurations...")
+                .defaults("&f正在重新加载配置文件...")
                 .build();
 
         ConfiguredMessage<BaseComponent[]> SUCCESS = value()
-                .defaults("&a&lSuccess! &fThe plugin configurations has been reloaded, cost &a%(time)&fms.")
+                .defaults("&a&l成功! &fResidenceList配置文件已重新加载, 耗时 &a%(time)&f 毫秒")
                 .params("time")
                 .build();
 
         ConfiguredMessage<BaseComponent[]> FAILED = value()
-                .defaults("&c&lFailed! &fThe plugin configurations failed to reload.")
+                .defaults("&c&l失败! &fResidenceList配置文件重载失败，请检查控制台")
                 .build();
 
     }
@@ -112,7 +112,7 @@ public interface PluginMessages extends Configuration {
     interface PIN extends Configuration {
         ConfiguredSound SOUND = ConfiguredSound.of("BLOCK_ANVIL_PLACE");
         ConfiguredMessage<BaseComponent[]> MESSAGE = value()
-                .defaults("&fYou have successfully pinned the residence &e%(residence)&f!")
+                .defaults("&f你成功置顶了领地 &e%(residence)&f!")
                 .params("residence")
                 .build();
     }
@@ -121,7 +121,7 @@ public interface PluginMessages extends Configuration {
     interface UNPIN extends Configuration {
         ConfiguredSound SOUND = ConfiguredSound.of(Sound.BLOCK_ANVIL_BREAK, 0.5F);
         ConfiguredMessage<BaseComponent[]> MESSAGE = value()
-                .defaults("&fYou have unpinned the residence &e%(residence)&f!")
+                .defaults("&f你取消置顶了领地 &e%(residence)&f!")
                 .params("residence")
                 .build();
     }
@@ -131,7 +131,7 @@ public interface PluginMessages extends Configuration {
         ConfiguredSound SOUND = ConfiguredSound.of(Sound.ENTITY_ENDERMAN_TELEPORT, 0.5F);
 
         ConfiguredMessage<BaseComponent[]> NO_LOCATION = value()
-                .defaults("&c&lSorry! &fBut you cannot teleport to &e%(residence) &fyet!")
+                .defaults("&c&l抱歉! &f你暂时无法传送到领地 &e%(residence) &f!")
                 .params("residence")
                 .build();
     }
@@ -144,17 +144,17 @@ public interface PluginMessages extends Configuration {
 
         ConfiguredMessage<BaseComponent[]> NOTIFY = value()
                 .defaults(
-                        "&fYou are commenting for residence &e%(residence)&f, please enter your comment in chat.",
-                        "&fYou can enter '&e#cancel&f' to cancel this operation."
+                        "&f你正在评价领地 &e%(residence)&f,请在聊天栏输入你的评价",
+                        "&f你可以输入 '&e#cancel&f' 来取消评价"
                 ).params("residence").build();
 
         ConfiguredMessage<BaseComponent[]> NOT_RATED = value()
                 .defaults(
-                        "&fYou have not rated residence &e%(residence)&f yet, please rate it first!"
+                        "&f你还没有评价领地 &e%(residence)&f, 请先评价!"
                 ).params("residence").build();
         ConfiguredMessage<BaseComponent[]> REMOVED = value()
                 .defaults(
-                        "&fYou have successfully removed your comment for residence &e%(residence)&f!"
+                        "&f你成功删除了领地 &e%(residence)&f 的评价!"
                 ).params("residence").build();
 
     }
@@ -166,43 +166,41 @@ public interface PluginMessages extends Configuration {
 
         ConfiguredMessage<BaseComponent[]> NAME = value()
                 .defaults(
-                        "&fYou are setting up nickname for residence &e%(residence)&f, please enter in chat.",
-                        "&fRemember that a nickname should be &eless than 16 characters&f.",
-                        "&fYou can enter '&e#cancel&f' to cancel this operation."
+                        "&f你正在为领地 &e%(residence)&f设置别名, 请在聊天栏输入",
+                        "&f别名长度 &e不能超过 16 个字符&f.",
+                        "&f你可以输入 '&e#cancel&f' 来取消操作"
                 ).params("residence").build();
-
 
         ConfiguredMessage<BaseComponent[]> DESCRIPTION = value()
                 .defaults(
-                        "&fYou are editing description for residence &e%(residence)&f, please enter in chat.",
-                        "&fRemember that you can use '&e\\\\n&f' to wrap lines.",
-                        "&fYou can enter '&e#cancel&f' to cancel this operation."
+                        "&f你正在为领地 &e%(residence)&f编辑描述, 请在聊天栏输入",
+                        "&f你可以使用 '&e\\\\n&f' 进行换行.",
+                        "&f你也可以输入 '&e#cancel&f' 来取消操作"
                 ).params("residence").build();
 
         ConfiguredMessage<BaseComponent[]> NAME_TOO_LONG = value()
                 .defaults(
-                        "&c&lSorry! &fBut the nickname that you input is too long,",
-                        "&fRemember that a nickname should be &eless than 16 characters&f."
+                        "&c&l抱歉! &f领地别名过长,",
+                        "&f注意别名长度 &e不能超过 16 个字符&f."
                 ).params("residence").build();
 
-
         ConfiguredMessage<BaseComponent[]> NAME_UPDATED = value()
-                .defaults("&fYou have successfully updated the nickname of residence &e%(residence)&f!")
+                .defaults("&f成功为领地 &e%(residence)&f 更新了别名!")
                 .params("residence")
                 .build();
 
         ConfiguredMessage<BaseComponent[]> DESCRIPTION_UPDATED = value()
-                .defaults("&fYou have successfully updated the description of residence &e%(residence)&f!")
+                .defaults("&f成功为领地 &e%(residence)&f 更新了描述!")
                 .params("residence")
                 .build();
 
         ConfiguredMessage<BaseComponent[]> ICON_UPDATED = value()
-                .defaults("&fYou have successfully updated the icon of residence &e%(residence)&f!")
+                .defaults("&f成功为领地 &e%(residence)&f 更新了图标!")
                 .params("residence")
                 .build();
 
         ConfiguredMessage<BaseComponent[]> ICON_BLOCKED = value()
-                .defaults("&fYou cannot select this material as residence icon!")
+                .defaults("&f你不能使用这个物品作为领地图标!")
                 .build();
     }
 
@@ -228,20 +226,62 @@ public interface PluginMessages extends Configuration {
                 .defaults("&a&l成功! &f你成功创建了领地 &e%(residence)&f!")
                 .params("residence")
                 .build();
-
-        ConfiguredMessage<String> ANVIL_TITLE = ConfiguredMessage.asString()
-                .defaults("&a&l输入领地名称")
-                .build();
-
-        ConfiguredMessage<String> ANVIL_DEFAULT = ConfiguredMessage.asString()
-                .defaults("myresidence")
-                .build();
-
-        ConfiguredMessage<BaseComponent[]> ANVIL_OPEN = value()
-                .defaults("&f请在铁砧界面中输入领地名称, 取出结果物品即可完成创建.")
-                .build();
     }
 
+    interface CREATE_GUI extends Configuration {
+
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
+                .defaults("&a&l创建领地")
+                .build();
+
+        interface ITEMS extends Configuration {
+
+            ConfiguredMessage<String> STEP_1_NAME = ConfiguredMessage.asString()
+                    .defaults("&e&l第一步 &7| &f选取圈地范围")
+                    .build();
+            ConfiguredMessage<String> STEP_1_LORE = ConfiguredMessage.asString()
+                    .defaults("&7\n&7使用领地选取工具(%tool%)\n&7左键和右键分别选取两个对角点\n&7或使用 &a自动选取 &7自动选区")
+                    .build();
+            ConfiguredMessage<String> STEP_1_ON_TIP = ConfiguredMessage.asString()
+                    .defaults("&a▶ 点击 &8| &f关闭自动选取")
+                    .build();
+            ConfiguredMessage<String> STEP_1_OFF_TIP = ConfiguredMessage.asString()
+                    .defaults("&a▶ 点击 &8| &f开启自动选取")
+                    .build();
+
+            ConfiguredMessage<String> STEP_2_NAME = ConfiguredMessage.asString()
+                    .defaults("&e&l第二步 &7| &f查看选取信息")
+                    .build();
+            ConfiguredMessage<String> STEP_2_EMPTY_NAME = ConfiguredMessage.asString()
+                    .defaults("&e&l第二步 &7| &f查看选取信息 &8(无选区)")
+                    .build();
+            ConfiguredMessage<String> STEP_2_EMPTY_LORE = ConfiguredMessage.asString()
+                    .defaults("&7\n&7鼠标悬停可查看当前选区信息\n&c请先选取区域后再查看信息\n&7\n&a▶ 点击 &8| &f刷新选区信息")
+                    .build();
+            ConfiguredMessage<String> STEP_2_REFRESH_TIP = ConfiguredMessage.asString()
+                    .defaults("&a▶ 点击 &8| &f刷新选区信息")
+                    .build();
+
+            ConfiguredMessage<String> STEP_3_READY_NAME = ConfiguredMessage.asString()
+                    .defaults("&e&l第三步 &7| &f输入名称并确认购买")
+                    .build();
+            ConfiguredMessage<String> STEP_3_READY_LORE = ConfiguredMessage.asString()
+                    .defaults("&7\n&7选区已就绪!\n&7点击后在聊天栏输入领地名称\n&7输入'#cancel'可取消操作\n&7\n&c注意: 创建后将扣除相应费用\n&7\n&a▶ 点击 &8| &f开始创建")
+                    .build();
+            ConfiguredMessage<String> STEP_3_NOT_READY_NAME = ConfiguredMessage.asString()
+                    .defaults("&e&l第三步 &7| &f输入名称并确认购买 &8(未选取)")
+                    .build();
+            ConfiguredMessage<String> STEP_3_NOT_READY_LORE = ConfiguredMessage.asString()
+                    .defaults("&7\n&c请先完成第一步和第二步\n&c选取区域后再创建领地")
+                    .build();
+
+            ConfiguredMessage<String> BACK_NAME = ConfiguredMessage.asString()
+                    .defaults("&7&l返回领地列表")
+                    .build();
+            ConfiguredMessage<String> BACK_LORE = ConfiguredMessage.asString()
+                    .defaults("&7\n&a▶ 点击 &8| &f返回")
+                    .build();
+        }
+    }
 
 }
-

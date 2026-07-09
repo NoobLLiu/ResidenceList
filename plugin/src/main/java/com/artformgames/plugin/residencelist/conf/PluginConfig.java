@@ -11,7 +11,6 @@ import com.artformgames.plugin.residencelist.ui.ResidenceInfoUI;
 import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
 import com.artformgames.plugin.residencelist.ui.ResidenceManageUI;
 import com.artformgames.plugin.residencelist.ui.SelectIconGUI;
-import com.artformgames.plugin.residencelist.ui.CreateResidenceUI;
 import com.artformgames.plugin.residencelist.ui.admin.ResidenceAdminUI;
 import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Material;
@@ -174,7 +173,6 @@ public interface PluginConfig extends Configuration {
         Class<?> MANAGE = ResidenceManageUI.CONFIG.class;
         Class<?> ADMIN = ResidenceAdminUI.CONFIG.class;
         Class<?> SELECT = SelectIconGUI.CONFIG.class;
-        Class<?> CREATE = CreateResidenceUI.CONFIG.class;
 
     }
 
