@@ -8,7 +8,7 @@ import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessage;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
+import com.artformgames.plugin.residencelist.listener.EditHandler;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.permissions.PermissionGroup;
@@ -82,28 +82,31 @@ public class CreateResidenceUI extends GUI {
                 }
 
                 clicker.closeInventory();
-                PluginMessages.CREATE.ANVIL_OPEN.sendTo(clicker);
-                AnvilNameInput.open(clicker, PluginMessages.CREATE.ANVIL_TITLE.parseLine(clicker),
-                        PluginMessages.CREATE.ANVIL_DEFAULT.parseLine(clicker),
-                        (player, name) -> {
-                    if (name == null || name.isBlank()) {
+                PluginMessages.CREATE.NOTIFY.sendTo(clicker);
+                PluginMessages.CREATE.ASK_SOUND.playTo(clicker);
+                EditHandler.start(clicker, (player, content) -> {
+                    if (content == null || content.isBlank()) {
                         PluginMessages.CREATE.FAILED_SOUND.playTo(player);
-                        CreateResidenceUI.open(player, owner);
                         return;
                     }
 
                     // 等效 /res create <name>：通过Bukkit命令分发触发所有Residence原生检查
-                    Bukkit.dispatchCommand(player, "res create " + name);
+                    Bukkit.dispatchCommand(player, "res create " + content);
                     ResidenceListUI.open(player, owner);
                 });
             }
         });
 
-        // 返回列表按钮 (slot 49)
+        // 返回列表按钮 (slot 49) — 退出时自动关闭自动选取模式
         setItem(49, new GUIItem(CONFIG.ITEMS.BACK.get(viewer)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                // 如果处于自动选取模式，自动关闭
+                if (Residence.getInstance().getAutoSelectionManager()
+                        .getList().containsKey(clicker.getUniqueId())) {
+                    Residence.getInstance().getAutoSelectionManager().switchAutoSelection(clicker);
+                }
                 clicker.closeInventory();
                 ResidenceListUI.open(clicker, owner);
             }
@@ -228,8 +231,8 @@ public class CreateResidenceUI extends GUI {
                     .defaultLore(
                             "&7",
                             "&7选区已就绪！",
-                            "&7点击后进入铁砧界面输入领地名称",
-                            "&7取出结果物品即可完成创建",
+                            "&7点击后在聊天栏输入领地名称",
+                            "&7输入 '#cancel' 可取消操作",
                             "&7",
                             "&c注意: 创建后将扣除相应费用",
                             "&7",

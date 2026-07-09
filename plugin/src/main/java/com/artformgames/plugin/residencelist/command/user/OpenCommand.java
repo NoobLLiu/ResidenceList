@@ -5,6 +5,7 @@ import cc.carm.lib.easyplugin.command.SubCommand;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
+import com.artformgames.plugin.residencelist.ui.CreateResidenceUI;
 import com.artformgames.plugin.residencelist.ui.ResidenceListUI;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
@@ -38,7 +39,16 @@ public class OpenCommand extends SubCommand<UserCommands> {
             }
         }
 
-        ResidenceListUI.open(player, Optional.ofNullable(owner).map(ResidencePlayer::getName).orElse(null));
+        String ownerName = Optional.ofNullable(owner).map(ResidencePlayer::getName).orElse(null);
+
+        // 如果玩家处于自动圈地模式，直接进入创建页面
+        boolean autoSelecting = Residence.getInstance().getAutoSelectionManager()
+                .getList().containsKey(player.getUniqueId());
+        if (autoSelecting && owner == null) {
+            CreateResidenceUI.open(player, ownerName);
+        } else {
+            ResidenceListUI.open(player, ownerName);
+        }
         PluginConfig.GUI.OPEN_SOUND.playTo(player);
 
         return null;
