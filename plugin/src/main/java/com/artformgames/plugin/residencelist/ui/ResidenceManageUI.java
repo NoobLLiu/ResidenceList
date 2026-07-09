@@ -133,6 +133,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 } else if (type.isLeftClick()) {
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
                     AnvilNameInput.open(getViewer(), "设置领地别名", "", (player, content) -> {
+                        if (content == null || content.isBlank()) return;
                         if (content.length() > 16) {
                             PluginMessages.EDIT.NAME_TOO_LONG.sendTo(player);
                             PluginMessages.EDIT.FAILED_SOUND.playTo(player);
@@ -146,6 +147,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 } else if (type.isRightClick()) {
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
                     AnvilNameInput.open(getViewer(), "编辑领地描述", "", (player, content) -> {
+                        if (content == null || content.isBlank()) return;
                         getResidenceData().modify(d -> d.setDescription(content.split("\\\\n")));
                         PluginMessages.EDIT.DESCRIPTION_UPDATED.sendTo(player, getResidenceData().getDisplayName());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
