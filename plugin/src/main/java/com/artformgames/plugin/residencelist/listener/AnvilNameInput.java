@@ -25,8 +25,8 @@ import java.util.function.BiConsumer;
 
 /**
  * 使用 Bukkit 原生铁砧 GUI 实现文本输入。
- * 关键：在 onClick 中点击结果槽时就读取名称（此时铁砧还开着），
- * 存入 session，onClose 时使用。不取消结果槽点击，让铁砧正常关闭。
+ * 点击结果槽时直接读取名称、关闭铁砧并执行回调；
+ * ESC 关闭则视为取消。
  */
 public class AnvilNameInput implements Listener {
 
@@ -69,13 +69,12 @@ public class AnvilNameInput implements Listener {
 
         int rawSlot = event.getRawSlot();
 
-        // 点击结果槽(slot 2)：在铁砧处理之前读取名称
+        // 点击结果槽(slot 2)：读取名称，关闭铁砧，执行回调
         if (rawSlot == 2) {
-            InputSession session = sessions.get(player.getUniqueId());
+            InputSession session = sessions.remove(player.getUniqueId());
             if (session == null) return;
 
-            // 此时铁砧还开着，结果物品还在 slot 2
-            // 优先用反射读取 Paper AnvilView.getRenameText()
+            // 此时铁砧还开着，优先用反射读取 Paper AnvilView.getRenameText()
             String name = getRenameText(event.getView());
 
             // 反射失败则从结果物品(slot 2)的显示名读取
@@ -83,11 +82,16 @@ public class AnvilNameInput implements Listener {
                 name = extractName(topInventory.getItem(2));
             }
 
-            // 存入 session，标记为已提交
-            session.setName(name != null ? name : "");
-            session.setSubmitted(true);
+            final String finalName = name != null ? name : "";
 
-            // 不取消事件，让铁砧正常处理（玩家取出结果 → 铁砧关闭 → onClose 触发）
+            // 取消事件，防止纸片进入玩家背包
+            event.setCancelled(true);
+
+            // 下一 tick 关闭铁砧并执行回调
+            Bukkit.getScheduler().runTask(Main.getInstance(), () -> {
+                player.closeInventory();
+                session.callback().accept(player, finalName);
+            });
             return;
         }
 
@@ -108,29 +112,16 @@ public class AnvilNameInput implements Listener {
         if (!(event.getPlayer() instanceof Player player)) return;
         if (!(event.getInventory().getHolder() instanceof InputHolder)) return;
 
+        // session 已在 onClick 中移除（确认提交），此处仅处理 ESC 关闭（取消）
         InputSession session = sessions.remove(player.getUniqueId());
         if (session == null) return;
 
-        String name;
-        if (session.isSubmitted()) {
-            // 玩家点击了结果槽，名称已在 onClick 中读取
-            name = session.getName();
-        } else {
-            // 玩家直接关闭（ESC），尝试读取
-            name = getRenameText(event.getView());
-            if (name == null || name.isEmpty()) {
-                name = extractName(event.getInventory().getItem(0));
-            }
-        }
-
-        final String finalName = (name != null) ? name : "";
-
+        // ESC 关闭：不执行回调（视为取消）
+        // 清除光标上的物品（防止玩家拿到重命名的纸）
         Bukkit.getScheduler().runTask(Main.getInstance(), () -> {
-            // 清除光标上的物品（防止玩家拿到重命名的纸）
             if (player.getItemOnCursor() != null && player.getItemOnCursor().getType() == Material.PAPER) {
                 player.setItemOnCursor(null);
             }
-            session.callback().accept(player, finalName);
         });
     }
 
@@ -162,8 +153,6 @@ public class AnvilNameInput implements Listener {
 
     private static class InputSession {
         private final @NotNull BiConsumer<Player, String> callback;
-        private String name;
-        private boolean submitted;
 
         InputSession(@NotNull BiConsumer<Player, String> callback) {
             this.callback = callback;
@@ -171,22 +160,6 @@ public class AnvilNameInput implements Listener {
 
         @NotNull BiConsumer<Player, String> callback() {
             return callback;
-        }
-
-        String getName() {
-            return name;
-        }
-
-        void setName(String name) {
-            this.name = name;
-        }
-
-        boolean isSubmitted() {
-            return submitted;
-        }
-
-        void setSubmitted(boolean submitted) {
-            this.submitted = submitted;
         }
     }
 
