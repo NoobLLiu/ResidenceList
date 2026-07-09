@@ -234,6 +234,15 @@ public interface PluginMessages extends Configuration {
                 .defaults("&a&l创建领地")
                 .build();
 
+        // 铁砧输入界面标题和占位符
+        ConfiguredMessage<String> ANVIL_TITLE = ConfiguredMessage.asString()
+                .defaults("&a&l创建领地 - 输入名称")
+                .build();
+
+        ConfiguredMessage<String> ANVIL_PLACEHOLDER = ConfiguredMessage.asString()
+                .defaults("&7输入领地名称...")
+                .build();
+
         interface ITEMS extends Configuration {
 
             ConfiguredMessage<String> STEP_1_NAME = ConfiguredMessage.asString()
@@ -242,11 +251,11 @@ public interface PluginMessages extends Configuration {
             ConfiguredMessage<String> STEP_1_LORE = ConfiguredMessage.asString()
                     .defaults("&7\n&7使用领地选取工具(%tool%)\n&7左键和右键分别选取两个对角点\n&7或使用 &a自动选取 &7自动选区")
                     .build();
-            ConfiguredMessage<String> STEP_1_ON_TIP = ConfiguredMessage.asString()
-                    .defaults("&a▶ 点击 &8| &f关闭自动选取")
+            ConfiguredMessage<String> STEP_1_STATUS_ON = ConfiguredMessage.asString()
+                    .defaults("&2&l[自动选取已开启]")
                     .build();
-            ConfiguredMessage<String> STEP_1_OFF_TIP = ConfiguredMessage.asString()
-                    .defaults("&a▶ 点击 &8| &f开启自动选取")
+            ConfiguredMessage<String> STEP_1_STATUS_OFF = ConfiguredMessage.asString()
+                    .defaults("&4&l[自动选取已关闭]")
                     .build();
 
             ConfiguredMessage<String> STEP_2_NAME = ConfiguredMessage.asString()
@@ -261,12 +270,16 @@ public interface PluginMessages extends Configuration {
             ConfiguredMessage<String> STEP_2_REFRESH_TIP = ConfiguredMessage.asString()
                     .defaults("&a▶ 点击 &8| &f刷新选区信息")
                     .build();
+            // 第二步选区详情（buildStep2Item 中动态显示的选区信息）
+            ConfiguredMessage<String> STEP_2_DETAIL = ConfiguredMessage.asString()
+                    .defaults("&7\n&f当前选区: &e%(size_x)&7×&e%(size_y)&7×&e%(size_z)\n&f总面积: &e%(total_size) &7方块\n&f世界: &e%(world)\n&f坐标: &7(%(pos_low)) → (%(pos_high))\n&7\n&f创建费用: %(cost)\n&f领地数量: %(count)&7/%(max)\n&7\n&a▶ 点击 &8| &f刷新选区信息")
+                    .build();
 
             ConfiguredMessage<String> STEP_3_READY_NAME = ConfiguredMessage.asString()
                     .defaults("&e&l第三步 &7| &f输入名称并确认购买")
                     .build();
             ConfiguredMessage<String> STEP_3_READY_LORE = ConfiguredMessage.asString()
-                    .defaults("&7\n&7选区已就绪!\n&7点击后在聊天栏输入领地名称\n&7输入'#cancel'可取消操作\n&7\n&c注意: 创建后将扣除相应费用\n&7\n&a▶ 点击 &8| &f开始创建")
+                    .defaults("&7\n&7选区已就绪!\n&7点击后在铁砧界面输入领地名称\n&7取出结果物品即可完成创建\n&7\n&c注意: 创建后将扣除相应费用\n&7\n&a▶ 点击 &8| &f开始创建")
                     .build();
             ConfiguredMessage<String> STEP_3_NOT_READY_NAME = ConfiguredMessage.asString()
                     .defaults("&e&l第三步 &7| &f输入名称并确认购买 &8(未选取)")

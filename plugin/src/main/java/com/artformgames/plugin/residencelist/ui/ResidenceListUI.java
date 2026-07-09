@@ -226,79 +226,92 @@ public class ResidenceListUI extends AutoPagedGUI {
 
     public interface CONFIG extends Configuration {
 
-        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&lResidence list &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&l领地列表 &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
 
         interface ITEMS extends Configuration {
 
             ConfiguredItem ALL = ConfiguredItem.create()
                     .defaultType(Material.CHEST)
-                    .defaultName("&a&lAll residences")
+                    .defaultName("&a&l所有领地")
                     .defaultLore(
-                            "&7", "&7Now all residences are displayed.",
                             "&7",
-                            "&a ▶ Click &8|&f See only personal residences"
+                            "&7所有公开的领地均已展示",
+                            "&7",
+                            "&e&l ▶ &l左键点击 &8|&f 查看私人领地"
                     ).build();
 
             ConfiguredItem OWNED = ConfiguredItem.create()
                     .defaultType(Material.PLAYER_HEAD)
-                    .defaultName("&7Residence owned by &f%(owner)")
-                    .defaultLore("&7", "&a ▶ Click &8|&f See all residences")
+                    .defaultName("&7领地主人>> &f%(owner)")
+                    .defaultLore("&7", "&e&l ▶ &l左键点击 &8|&f 查看所有领地")
                     .params("owner").build();
 
             ConfiguredItem CREATE = ConfiguredItem.create()
                     .defaultType(Material.WRITABLE_BOOK)
-                    .defaultName("&a&lCreate residence")
+                    .defaultName("&a&l创建领地")
                     .defaultLore(
                             "&7",
-                            "&7Create a new residence from your selection.",
-                            "&7Make sure you have selected an area first.",
+                            "&7从你的选区在铁砧界面内命名并创建一个新的领地。",
+                            "&7请确保你已经用领地选取工具选好了区域。",
                             "&7",
-                            "&a ▶ Click &8|&f Create a new residence"
+                            "&a ▶ 点击 &8|&f 创建领地"
                     ).build();
+
+            ConfiguredItem AUTO_SELECT_ENABLED = ConfiguredItem.create()
+                    .defaultType(Material.EMERALD)
+                    .defaultName("&a&lAuto select &2&l[ON]")
+                    .defaultLore("&7", "&7Auto select tool is &aenabled&7.", "&7Your selection will expand automatically", "&7as you move around.", "&7", "&a ▶ Click &8|&f Disable auto select")
+                    .build();
+
+            ConfiguredItem AUTO_SELECT_DISABLED = ConfiguredItem.create()
+                    .defaultType(Material.REDSTONE)
+                    .defaultName("&c&lAuto select &4&l[OFF]")
+                    .defaultLore("&7", "&7Auto select tool is &cdisabled&7.", "&7Use the selection tool to select manually.", "&7", "&a ▶ Click &8|&f Enable auto select")
+                    .build();
 
             ConfiguredItem SORT_BY_RATINGS = ConfiguredItem.create()
                     .defaultType(Material.LADDER)
-                    .defaultName("&fSort by &e&lRATINGS %(order)")
+                    .defaultName("&f以 &e&l领地评分 %(order) &f排序")
                     .defaultLore(
                             "&7",
-                            "&fSort order: %(order)",
-                            "&fSort functions:",
-                            "&7 &a➥ &e&lRATINGS",
-                            "&7     &fNAME",
-                            "&7     &fSIZE",
+                            "&f排序权重: %(order)",
+                            "&f当前选择排序方式:",
+                            "&7 &a➥ &e&l领地评分",
+                            "&7     &f领地名称",
+                            "&7     &f领地大小",
                             " ",
-                            "&a ▶ LClick &8|&f Switch sort function",
-                            "&a ▶ RClick &8|&f Toggle sort reverse"
+                            "&e&l ▶ &l左键点击 &8|&f 切换排序方式",
+                            "&e&l ▶ &l右键点击 &8|&f 切换排序权重"
                     ).params("order").build();
 
             ConfiguredItem SORT_BY_NAME = ConfiguredItem.create()
                     .defaultType(Material.LADDER)
-                    .defaultName("&fSort by &2&lNAME %(order)")
+                    .defaultName("&f以 &2&l领地名称 %(order) &f排序")
                     .defaultLore(
                             "&7",
-                            "&fSort order: %(order)",
-                            "&fSort functions:",
-                            "&7     &fRATINGS",
-                            "&7 &a➥ &2&lNAME",
-                            "&7     &fSIZE",
+                            "&f排序权重: %(order)",
+                            "&f当前选择排序方式:",
+                            "&7     &f领地评分",
+                            "&7 &a➥ &2&l领地名称",
+                            "&7     &f领地大小",
                             " ",
-                            "&a ▶ LClick &8|&f Switch sort function",
-                            "&a ▶ RClick &8|&f Toggle sort reverse"
+                            "&e&l ▶ &l左键点击 &8|&f 切换排序方式",
+                            "&e&l ▶ &l右键点击 &8|&f 切换排序权重"
                     ).params("order").build();
 
             ConfiguredItem SORT_BY_SIZE = ConfiguredItem.create()
                     .defaultType(Material.LADDER)
-                    .defaultName("&fSort by &d&lSIZE %(order)")
+                    .defaultName("&f以 &d&l领地大小 %(order) &f排序")
                     .defaultLore(
                             "&7",
-                            "&fSort order: %(order)",
-                            "&fSort functions:",
-                            "&7     &fRATINGS",
-                            "&7     &fNAME",
-                            "&7  &a➥ &d&lSIZE",
+                            "&f排序权重: %(order)",
+                            "&f当前选择排序方式:",
+                            "&7     &f领地评分",
+                            "&7     &f领地名称",
+                            "&7  &a➥ &d&l领地大小",
                             " ",
-                            "&a ▶ LClick &8|&f Switch sort function",
-                            "&a ▶ RClick &8|&f Toggle sort reverse"
+                            "&e&l ▶ &l左键点击 &8|&f 切换排序方式",
+                            "&e&l ▶ &l右键点击 &8|&f 切换排序权重"
                     ).params("order").build();
 
         }
@@ -306,13 +319,13 @@ public class ResidenceListUI extends AutoPagedGUI {
         interface ADDITIONAL_LORE extends Configuration {
 
             ConfiguredMessage<String> NORMAL = ConfiguredMessage.asString()
-                    .defaults("&a ▶ Click &8|&f View information", "&a ▶ Drop &8|&f Pin/Unpin residence")
+                    .defaults("&e&l ▶ &l左键点击 &8|&f 查看详细信息", "&e&l ▶ &l按下Ｑ键 &8|&f 置顶/取消置顶领地")
                     .build();
 
             ConfiguredMessage<String> TELEPORTABLE = ConfiguredMessage.asString().defaults(
-                    "&a ▶ LClick &8|&f View information",
-                    "&a ▶ RClick &8|&f Teleport to residence",
-                    "&a ▶  Drop  &8|&f Pin/Unpin residence"
+                    "&e&l ▶ &l左键点击 &8|&f 查看详细信息",
+                    "&e&l ▶ &l右键点击 &8|&f 传送到领地",
+                    "&e&l ▶ &l按下Ｑ键 &8|&f 置顶/取消置顶领地"
             ).build();
 
         }

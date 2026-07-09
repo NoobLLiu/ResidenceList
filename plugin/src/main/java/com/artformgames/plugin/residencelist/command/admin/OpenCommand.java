@@ -2,6 +2,8 @@ package com.artformgames.plugin.residencelist.command.admin;
 
 import cc.carm.lib.easyplugin.command.SimpleCompleter;
 import cc.carm.lib.easyplugin.command.SubCommand;
+import com.artformgames.plugin.residencelist.bedrock.BedrockFormUtil;
+import com.artformgames.plugin.residencelist.bedrock.BedrockResidenceAdminUI;
 import com.artformgames.plugin.residencelist.command.AdminCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
@@ -38,7 +40,13 @@ public class OpenCommand extends SubCommand<AdminCommands> {
             }
         }
 
-        ResidenceAdminUI.open(player, Optional.ofNullable(owner).map(ResidencePlayer::getName).orElse(null));
+        String ownerName = Optional.ofNullable(owner).map(ResidencePlayer::getName).orElse(null);
+
+        if (BedrockFormUtil.isBedrockPlayer(player)) {
+            BedrockResidenceAdminUI.open(player, ownerName);
+        } else {
+            ResidenceAdminUI.open(player, ownerName);
+        }
         PluginConfig.GUI.OPEN_SOUND.playTo(player);
 
         return null;

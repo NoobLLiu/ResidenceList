@@ -96,9 +96,15 @@ public class CreateResidenceUI extends GUI {
                 }
 
                 PluginMessages.CREATE.ASK_SOUND.playTo(clicker);
-                AnvilNameInput.open(clicker, "创建领地 - 输入名称", "", (player, content) -> {
+                clicker.closeInventory();
+                AnvilNameInput.open(clicker,
+                        PluginMessages.CREATE_GUI.ANVIL_TITLE.parseLine(clicker),
+                        PluginMessages.CREATE_GUI.ANVIL_PLACEHOLDER.parseLine(clicker),
+                        (player, content) -> {
                     if (content == null || content.isBlank()) {
-                        PluginMessages.CREATE.FAILED_SOUND.playTo(player);
+                        if (content != null) {
+                            PluginMessages.CREATE.FAILED_SOUND.playTo(player);
+                        }
                         return;
                     }
 
@@ -138,8 +144,8 @@ public class CreateResidenceUI extends GUI {
         List<String> lore = splitLore(loreRaw);
         lore.add("");
         lore.add(ColorParser.parse(autoEnabled
-                ? PluginMessages.CREATE_GUI.ITEMS.STEP_1_ON_TIP.parseLine(viewer)
-                : PluginMessages.CREATE_GUI.ITEMS.STEP_1_OFF_TIP.parseLine(viewer)));
+                ? PluginMessages.CREATE_GUI.ITEMS.STEP_1_STATUS_ON.parseLine(viewer)
+                : PluginMessages.CREATE_GUI.ITEMS.STEP_1_STATUS_OFF.parseLine(viewer)));
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;

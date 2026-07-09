@@ -8,12 +8,13 @@ website: ${project.url}
 authors:
   - CarmJos
 
-api-version: 1.16
+api-version: '1.21'
 
 depend:
   - Residence
 softdepend:
   - PlaceholderAPI
+  - floodgate
 
 
 permissions:

@@ -65,7 +65,7 @@ public interface PluginConfig extends Configuration {
         ConfiguredList<Material> BLOCKED_ICON_TYPES = ConfiguredList.builderOf(Material.class).fromString()
                 .parse(s -> Objects.requireNonNull(XMaterial.matchXMaterial(s).orElseThrow().parseMaterial()))
                 .serialize(d -> XMaterial.matchXMaterial(d).name())
-                .defaults(Material.CHEST, Material.CHAIN, Material.REDSTONE).build();
+                .defaults(Material.CHEST, Material.matchMaterial("CHAIN"), Material.REDSTONE).build();
 
     }
 
@@ -77,10 +77,10 @@ public interface PluginConfig extends Configuration {
                 .defaultName("&7# &f%(name)")
                 .defaultLore(
                         "{  &f&o}#description#{1,1}",
-                        "&7Owner: &f%(owner)",
-                        "&7Size: &f%(size) &7block(s)",
-                        "&7Members: &f%(members)",
-                        "&7Rates: &a%(likes) &7likes, &c%(dislikes) &7dislikes.",
+                        "&7主人: &f%(owner)",
+                        "&7规模: &f%(size) &7方块",
+                        "&7成员: &f%(members)",
+                        "&7评分: &a%(likes) &7夯爆了, &c%(dislikes) &7拉完了.",
                         "#click-lore#{1,0}"
                 ).params("name", "owner", "members", "size", "likes", "dislikes")
                 .build();
@@ -89,22 +89,22 @@ public interface PluginConfig extends Configuration {
 
             ConfiguredItem LIKE = ConfiguredItem.create()
                     .defaultType(Material.PLAYER_HEAD)
-                    .defaultName("&7From &f%(owner)")
+                    .defaultName("&7来自 &f%(owner)")
                     .defaultLore(
                             "{&7-  &f&o}#comment#{1,1}",
-                            "&7Commented at %(date),",
-                            "&7This user &arecommended &7this residence.",
+                            "&7评价于 %(date)",
+                            "&7这位玩家对此领地表示 &a&l拉完了",
                             "#click-lore#{1,0}"
                     ).params("owner", "date").build();
 
             ConfiguredItem DISLIKE = ConfiguredItem.create()
                     .defaultType(Material.PLAYER_HEAD)
-                    .defaultName("&7From &f%(owner)")
+                    .defaultName("&7来自 &f%(owner)")
                     .defaultLore(
                             "{  &f&o}#comment#{1}",
                             "&7",
-                            "&7Commented at %(date)",
-                            "&7This user &cnot recommended &7this residence.",
+                            "&7评价于 %(date)",
+                            "&7这位玩家对此领地表示 &c&l拉完了",
                             "#click-lore#{1,0}"
                     ).params("owner", "date").build();
 
@@ -120,40 +120,40 @@ public interface PluginConfig extends Configuration {
 
             ConfiguredItem PREVIOUS_PAGE = ConfiguredItem.create()
                     .defaultType(Material.ARROW)
-                    .defaultName("&fPrevious page")
+                    .defaultName("&f上一页")
                     .defaultLore(
                             " ",
-                            "&f  Left click to view the previous page.",
-                            "&f  Right click to view the first page.",
+                            "  &e左键点击 &7| &f查看上一页",
+                            "  &e右键点击 &7| &f查看第一页",
                             " ")
                     .build();
 
 
             ConfiguredItem NO_PREVIOUS_PAGE = ConfiguredItem.create()
                     .defaultType(Material.ARROW)
-                    .defaultName("&fPrevious page")
+                    .defaultName("&f这是第一页")
                     .defaultLore(
                             " ",
-                            "&f  There is no previous page.",
+                            "&f  不能再往前翻了",
                             " ")
                     .build();
 
             ConfiguredItem NEXT_PAGE = ConfiguredItem.create()
                     .defaultType(Material.ARROW)
-                    .defaultName("&fNext page")
+                    .defaultName("&f下一页")
                     .defaultLore(
                             " ",
-                            "&f  Left click to view the next page.",
-                            "&f  Right click to view the last page.",
+                            "  &e左键点击 &7| &f查看下一页",
+                            "  &e右键点击 &7| &f查看最后一页",
                             " "
                     ).build();
 
             ConfiguredItem NO_NEXT_PAGE = ConfiguredItem.create()
                     .defaultType(Material.ARROW)
-                    .defaultName("&fNext page")
+                    .defaultName("&f这是最后一页")
                     .defaultLore(
                             " ",
-                            "&f  There is no next page.",
+                            "&f  不能再往后翻了",
                             " ")
                     .build();
 

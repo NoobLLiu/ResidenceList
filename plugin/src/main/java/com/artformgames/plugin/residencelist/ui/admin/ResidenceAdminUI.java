@@ -173,25 +173,25 @@ public class ResidenceAdminUI extends AutoPagedGUI {
 
     public interface CONFIG extends Configuration {
 
-        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&lResidence list &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&l领地列表 &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
 
 
         interface ITEMS extends Configuration {
 
-            ConfiguredItem ALL = ConfiguredItem.create().defaultType(Material.CHEST).defaultName("&a&lAll residences").defaultLore("&7", "&7Now all residences are displayed.", "&7", "&a ▶ Click &8|&f See only personal residences").build();
-            ConfiguredItem OWNED = ConfiguredItem.create().defaultType(Material.PLAYER_HEAD).defaultName("&7Residence owned by &f%(owner)").defaultLore("&7", "&a ▶ Click &8|&f See all residences").params("owner").build();
+            ConfiguredItem ALL = ConfiguredItem.create().defaultType(Material.CHEST).defaultName("&a&l所有领地").defaultLore("&7", "&7所有公开的领地均已展示", "&7", "&e&l ▶ &l左键点击 &8|&f 查看私人领地").build();
+            ConfiguredItem OWNED = ConfiguredItem.create().defaultType(Material.PLAYER_HEAD).defaultName("&7领地主人>> &f%(owner)").defaultLore("&7", "&e&l ▶ &l左键点击 &8|&f 查看所有领地").params("owner").build();
 
         }
 
         interface ADDITIONAL_LORE extends Configuration {
 
             ConfiguredMessage<String> NORMAL = ConfiguredMessage.asString().defaults(
-                    "&a ▶ Click &8|&f View information"
+                    "&e&l ▶ &l左键点击 &8|&f 查看详细信息"
             ).build();
 
             ConfiguredMessage<String> TELEPORTABLE = ConfiguredMessage.asString().defaults(
-                    "&a ▶ LClick &8|&f View information",
-                    "&a ▶ RClick &8|&f Teleport to residence"
+                    "&e&l ▶ &l左键点击 &8|&f 查看详细信息",
+                    "&e&l ▶ &l右键点击 &8|&f 传送到领地"
             ).build();
 
         }

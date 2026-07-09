@@ -15,7 +15,6 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
 import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
@@ -152,16 +151,6 @@ public class ResidenceInfoUI extends AutoPagedGUI {
 
                 boolean recommend = type.isLeftClick();
                 PluginMessages.COMMENT.ASK_SOUND.playTo(clicker);
-                AnvilNameInput.open(clicker, "评价领地 - 输入留言", "", (player, content) -> {
-                    if (content == null || content.isBlank()) return;
-                    getResidenceData().modify(d -> d.addRate(content, recommend, getViewer().getUniqueId()));
-                    open(player, getResidenceData(), previousGUI);
-                    if (recommend) {
-                        PluginMessages.COMMENT.YES_SOUND.playTo(player);
-                    } else {
-                        PluginMessages.COMMENT.NO_SOUND.playTo(player);
-                    }
-                });
             }
         });
     }
@@ -281,48 +270,48 @@ public class ResidenceInfoUI extends AutoPagedGUI {
     public interface CONFIG extends Configuration {
 
         ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
-                .defaults("&a&lDetails &7#&f%(name)")
+                .defaults("&a&l详细信息 &7#&f%(name)")
                 .params("name").build();
 
         interface ITEMS extends Configuration {
 
             ConfiguredItem BACK = ConfiguredItem.create()
                     .defaultType(Material.REDSTONE_TORCH)
-                    .defaultName("&cBack").build();
+                    .defaultName("&c返回").build();
 
             ConfiguredItem OWNER = ConfiguredItem.create()
                     .defaultType(Material.PLAYER_HEAD)
-                    .defaultName("&7Residence owned by &f%(owner)")
+                    .defaultName("&7领地主人>> &f%(owner)")
                     .defaultLore(
                             "&7",
-                            "&a ▶ Click &8|&f See all his residences"
+                            "&e&l ▶ &l左键点击 &8|&f 查看该玩家所有领地"
                     ).params("owner").build();
 
             ConfiguredItem SERVER = ConfiguredItem.create()
                     .defaultType(Material.CREEPER_HEAD)
-                    .defaultName("&e&oServer Residence")
+                    .defaultName("&e&o服务器领地")
                     .defaultLore(
                             "&7"
                     ).build();
 
             ConfiguredItem TELEPORT_TO = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
-                    .defaultName("&dTeleport to residence")
+                    .defaultName("&d传送到领地")
                     .defaultLore(
                             "&7",
-                            "&7Residence location:",
+                            "&7领地坐标:",
                             "&f%(world)&7@&f%(x)&7,&f%(y),&f%(z)",
                             "",
-                            "&a ▶ Click &8|&f Teleport to residence."
+                            "&e&l ▶ &l左键点击 &8|&f 传送到领地"
                     ).params("world", "x", "y", "z").build();
 
 
             ConfiguredItem TELEPORT_DISABLED = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
-                    .defaultName("&d&mTeleport")
+                    .defaultName("&d&m传送到领地")
                     .defaultLore(
                             "&7",
-                            "&cThis residence cannot be teleported to.",
+                            "&c这个领地暂未开放传送.",
                             ""
                     ).build();
 
@@ -336,56 +325,56 @@ public class ResidenceInfoUI extends AutoPagedGUI {
 
             ConfiguredItem MEMBERS = ConfiguredItem.create()
                     .defaultType(Material.FURNACE)
-                    .defaultName("&eMembers")
+                    .defaultName("&e成员")
                     .defaultLore(
                             "&7",
-                            "&7This residence has &f%(members) &7members.",
+                            "&7该领地有 &f%(members) &7名成员。",
                             "&7",
-                            "&a ▶ Click &8|&f See all members."
+                            "&a ▶ 点击 &8|&f 查看所有成员。"
                     ).params("members").build();
 
             ConfiguredItem RATES = ConfiguredItem.create()
                     .defaultType(Material.COPPER_BLOCK)
-                    .defaultName("&eRates")
+                    .defaultName("&e评价")
                     .defaultLore(
                             "&7",
-                            "&7This residence has &f%(size) &7rates.",
+                            "&7该领地有 &f%(size) &7条评价。",
                             "&7",
-                            "&a ▶ Click &8|&f See all rates."
+                            "&a ▶ 点击 &8|&f 查看所有评价。"
                     ).params("size").build();
 
             ConfiguredItem RATE = ConfiguredItem.create()
                     .defaultType(Material.WRITABLE_BOOK)
-                    .defaultName("&eRate && Comment")
+                    .defaultName("&e评分 & 评价")
                     .defaultLore(
                             "&7",
-                            "&7You can rate and comment on this residence.",
+                            "&7你可以对该领地进行评价",
                             "&7",
-                            "&a ▶ LClick &8|&f Like && comment.",
-                            "&a ▶ RClick &8|&f Dislike && comment."
+                            "&e&l ▶ &l左键点击 &8|&f &a赞&f该领地并评价",
+                            "&e&l ▶ &l右键点击 &8|&f &c踩&f该领地并评价"
                     ).build();
 
             ConfiguredItem RATED = ConfiguredItem.create()
                     .defaultType(Material.WRITTEN_BOOK)
-                    .defaultName("&eRate && Comment")
+                    .defaultName("&e评分 & 评价")
                     .defaultLore(
                             "&7",
-                            "&7You have already rated and commented:",
+                            "&7你已对该领地进行了评价::",
                             "{&7- &f&o}#comment#",
-                            "&7Rate at &f%(date)",
+                            "&7评价时间 &f%(date)",
                             " ",
-                            "&7You can still update your comment.",
+                            "&7你仍然可以更新你的评价",
                             "&7",
-                            "&a ▶ LClick &8|&f Like && comment.",
-                            "&a ▶ RClick &8|&f Dislike && comment.",
-                            "&c ▶ Shift+Click &8|&f Remove your comment."
+                            "&e&l ▶ &l左键点击 &8|&f &a赞&f该领地并评价",
+                            "&e&l ▶ &l右键点击 &8|&f &c踩&f该领地并评价",
+                            "&c ▶ Shift+点击 &8|&f 删除你的评价"
                     ).params("date").build();
 
             ConfiguredItem EMPTY = ConfiguredItem.create()
                     .defaultType(Material.BARRIER)
-                    .defaultName("&7Empty")
+                    .defaultName("&7无评价")
                     .defaultLore(
-                            "&7There are no comments yet."
+                            "&7目前暂时没有评价"
                     ).build();
 
         }
@@ -393,7 +382,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
         interface ADDITIONAL_LORE extends Configuration {
 
             ConfiguredMessage<String> CLICK = ConfiguredMessage.asString().defaults(
-                    "&a ▶ Click &8|&f Pin/Unpin residence"
+                    "&e&l ▶ &l左键点击 &8|&f 置顶/取消置顶领地"
             ).build();
 
         }

@@ -2,6 +2,9 @@ package com.artformgames.plugin.residencelist.command.user;
 
 import cc.carm.lib.easyplugin.command.SimpleCompleter;
 import cc.carm.lib.easyplugin.command.SubCommand;
+import com.artformgames.plugin.residencelist.bedrock.BedrockFormUtil;
+import com.artformgames.plugin.residencelist.bedrock.BedrockCreateResidenceUI;
+import com.artformgames.plugin.residencelist.bedrock.BedrockResidenceListUI;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
@@ -44,6 +47,19 @@ public class OpenCommand extends SubCommand<UserCommands> {
         // 如果玩家处于自动圈地模式，直接进入创建页面
         boolean autoSelecting = Residence.getInstance().getAutoSelectionManager()
                 .getList().containsKey(player.getUniqueId());
+
+        // 基岩版玩家使用 Bedrock Forms 表单
+        if (BedrockFormUtil.isBedrockPlayer(player)) {
+            if (autoSelecting && owner == null) {
+                BedrockCreateResidenceUI.open(player, ownerName);
+            } else {
+                BedrockResidenceListUI.open(player, ownerName);
+            }
+            PluginConfig.GUI.OPEN_SOUND.playTo(player);
+            return null;
+        }
+
+        // Java 版玩家使用箱子 GUI
         if (autoSelecting && owner == null) {
             CreateResidenceUI.open(player, ownerName);
         } else {

@@ -15,7 +15,6 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
-import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
@@ -132,27 +131,8 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     }));
                 } else if (type.isLeftClick()) {
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
-                    AnvilNameInput.open(getViewer(), "设置领地别名", "", (player, content) -> {
-                        if (content == null || content.isBlank()) return;
-                        if (content.length() > 16) {
-                            PluginMessages.EDIT.NAME_TOO_LONG.sendTo(player);
-                            PluginMessages.EDIT.FAILED_SOUND.playTo(player);
-                            return;
-                        }
-                        getResidenceData().modify(d -> d.setNickname(content));
-                        PluginMessages.EDIT.NAME_UPDATED.sendTo(player, getResidenceData().getDisplayName());
-                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                        open(getViewer(), getResidenceData(), previousGUI);
-                    });
                 } else if (type.isRightClick()) {
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
-                    AnvilNameInput.open(getViewer(), "编辑领地描述", "", (player, content) -> {
-                        if (content == null || content.isBlank()) return;
-                        getResidenceData().modify(d -> d.setDescription(content.split("\\\\n")));
-                        PluginMessages.EDIT.DESCRIPTION_UPDATED.sendTo(player, getResidenceData().getDisplayName());
-                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                        open(getViewer(), getResidenceData(), previousGUI);
-                    });
                 }
             }
         });
@@ -262,64 +242,64 @@ public class ResidenceManageUI extends AutoPagedGUI {
     public interface CONFIG extends Configuration {
 
         ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
-                .defaults("&a&lDetails &7#&f%(name)")
+                .defaults("&a&l详细信息 &7#&f%(name)")
                 .params("name").build();
 
         interface ITEMS extends Configuration {
 
             ConfiguredItem BACK = ConfiguredItem.create()
                     .defaultType(Material.REDSTONE_TORCH)
-                    .defaultName("&cBack").build();
+                    .defaultName("&c返回").build();
 
             ConfiguredItem TELEPORT = ConfiguredItem.create()
                     .defaultType(Material.ENDER_EYE)
-                    .defaultName("&d&lTeleport")
+                    .defaultName("&d&l传送")
                     .defaultLore(
                             "&7",
-                            "&7Residence location:",
+                            "&7领地坐标:",
                             "&f%(world)&7@&f%(x)&7,&f%(y),&f%(z)",
                             "",
-                            "&a ▶ LClick &8|&f Teleport to residence.",
-                            "&a ▶ RClick &8|&f Set current location for teleportation."
+                            "&e&l ▶ &l左键点击 &8|&f 传送到领地传送点",
+                            "&e&l ▶ &l右键点击 &8|&f 设置当前所处位置为此领地传送点"
                     ).params("world", "x", "y", "z").build();
 
             ConfiguredItem INFORMATION = ConfiguredItem.create()
                     .defaultType(Material.OAK_SIGN)
-                    .defaultName("&e&lEdit information")
+                    .defaultName("&e&l编辑领地信息")
                     .defaultLore(
                             "",
-                            "&a ▶ LClick &8|&f Set residence's nickname.",
-                            "&a ▶ RClick &8|&f Set residence's description.",
-                            "&a ▶ Shift+Click &8|&f Edit residence's icon"
+                            "&e&l ▶ &l左键点击 &8|&f 设置领地昵称(别名)",
+                            "&e&l ▶ &l右键点击 &8|&f 设置领地描述",
+                            "&e&l ▶ &l中键点击 &8|&f 设置领地图标"
                     ).build();
 
             ConfiguredItem PUBLIC = ConfiguredItem.create()
                     .defaultType(Material.LIME_DYE)
-                    .defaultName("&7Current: &a&lPublic")
+                    .defaultName("&7当前状态: &a&l公开")
                     .defaultLore(
                             " ",
-                            "&7Now all players can see this residence in list.",
+                            "&7现在所有的玩家都可以在公开列表内看到该领地.",
                             " ",
-                            "&a ▶ Click &8|&f Change to &c&lPrivate"
+                            "&e&l ▶ &l左键点击 &8|&f 切换至 &c&l私有"
                     ).build();
 
             ConfiguredItem PRIVATE = ConfiguredItem.create()
                     .defaultType(Material.GRAY_DYE)
-                    .defaultName("&7Current: &c&lPrivate")
+                    .defaultName("&7当前状态: &c&l私有")
                     .defaultLore(
                             " ",
-                            "&7Now only you can see this residence in list.",
-                            "&7Others can't see it.",
+                            "&7现在只有你能够看到此领地",
+                            "&7其他玩家无法在公开列表看到该领地",
                             " ",
-                            "&a ▶ Click &8|&f Change to &a&lPublic"
+                            "&e&l ▶ &l左键点击 &8|&f 切换至 &a&l公开"
                     ).build();
 
 
             ConfiguredItem EMPTY = ConfiguredItem.create()
                     .defaultType(Material.BARRIER)
-                    .defaultName("&7Empty")
+                    .defaultName("&7无评论")
                     .defaultLore(
-                            "&7There are no comments yet."
+                            "&7目前暂无评论"
                     ).build();
 
         }
@@ -327,11 +307,11 @@ public class ResidenceManageUI extends AutoPagedGUI {
         interface ADDITIONAL_LORE extends Configuration {
 
             ConfiguredMessage<String> CLICK = ConfiguredMessage.asString().defaults(
-                    "&a ▶ LClick &8|&f Pin/Unpin residence"
+                    "&e&l ▶ &l左键点击 &8|&f 置顶/取消置顶"
             ).build();
 
             ConfiguredMessage<String> REMOVE = ConfiguredMessage.asString().defaults(
-                    "&a ▶ LClick &8|&f Delete this comment &c(ADMIN)"
+                    "&e&l ▶ &l左键点击 &8|&f 删除该条评论 &c(管理员权限)"
             ).build();
 
         }

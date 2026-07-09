@@ -4,6 +4,8 @@ import cc.carm.lib.easyplugin.command.SimpleCompleter;
 import cc.carm.lib.easyplugin.command.SubCommand;
 import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.artformgames.plugin.residencelist.api.residence.ResidenceData;
+import com.artformgames.plugin.residencelist.bedrock.BedrockFormUtil;
+import com.artformgames.plugin.residencelist.bedrock.BedrockResidenceManageUI;
 import com.artformgames.plugin.residencelist.command.UserCommands;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
@@ -43,7 +45,11 @@ public class EditCommand extends SubCommand<UserCommands> {
             return null;
         }
 
-        ResidenceManageUI.open(player, data, null);
+        if (BedrockFormUtil.isBedrockPlayer(player)) {
+            BedrockResidenceManageUI.open(player, data, null);
+        } else {
+            ResidenceManageUI.open(player, data, null);
+        }
         PluginConfig.GUI.OPEN_SOUND.playTo(player);
         return null;
     }

@@ -51,17 +51,17 @@ public class SelectIconGUI extends GUI {
     public interface CONFIG extends Configuration {
 
         ConfiguredMessage<String> TITLE = ConfiguredMessage.asString()
-                .defaults("&a&lPlease select icon")
+                .defaults("&a&l请选择一个领地图标")
                 .build();
 
         interface ITEMS extends Configuration {
 
             ConfiguredItem SELECT = ConfiguredItem.create()
                     .defaultType(Material.LIME_DYE)
-                    .defaultName("&7Click items in backpack")
+                    .defaultName("&7在背包里点击物品")
                     .defaultLore(
                             " ",
-                            "&7Please click items in backpack to select icon.",
+                            "&7请在背包里点击物品图标",
                             " "
                     ).build();
 
