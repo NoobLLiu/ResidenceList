@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,8 +42,22 @@ public class CreateResidenceUI extends GUI {
         initItems();
     }
 
+    /** 反射获取Residence选取工具名称，避免CMIMaterial编译时依赖 */
+    private static String getSelectionToolName() {
+        try {
+            Object configManager = Residence.getInstance().getConfigManager();
+            Method getTool = configManager.getClass().getMethod("getSelectionTool");
+            Object tool = getTool.invoke(configManager);
+            Method getName = tool.getClass().getMethod("getName");
+            Object result = getName.invoke(tool);
+            return result != null ? result.toString() : "Wooden Hoe";
+        } catch (Exception e) {
+            return "Wooden Hoe";
+        }
+    }
+
     public void initItems() {
-        String toolName = Residence.getInstance().getConfigManager().getSelectionTool().getName();
+        String toolName = getSelectionToolName();
         boolean autoEnabled = Residence.getInstance().getAutoSelectionManager()
                 .getList().containsKey(viewer.getUniqueId());
         boolean hasSelection = Residence.getInstance().getSelectionManager().hasPlacedBoth(viewer);
@@ -132,7 +147,6 @@ public class CreateResidenceUI extends GUI {
         return item;
     }
 
-    @SuppressWarnings("deprecation")
     private ItemStack buildStep2Item() {
         boolean hasSelection = Residence.getInstance().getSelectionManager().hasPlacedBoth(viewer);
 
