@@ -153,6 +153,7 @@ public class ResidenceInfoUI extends AutoPagedGUI {
                 boolean recommend = type.isLeftClick();
                 PluginMessages.COMMENT.ASK_SOUND.playTo(clicker);
                 AnvilNameInput.open(clicker, "评价领地 - 输入留言", "", (player, content) -> {
+                    if (content == null || content.isBlank()) return;
                     getResidenceData().modify(d -> d.addRate(content, recommend, getViewer().getUniqueId()));
                     open(player, getResidenceData(), previousGUI);
                     if (recommend) {
