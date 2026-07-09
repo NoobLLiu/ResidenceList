@@ -32,11 +32,13 @@ public class AnvilNameInput implements Listener {
 
     private static final Map<UUID, InputSession> sessions = new HashMap<>();
     private static Method getRenameTextMethod = null;
+    private static Method setRepairCostMethod = null;
 
     static {
         try {
-            getRenameTextMethod = Class.forName("org.bukkit.inventory.AnvilView")
-                    .getMethod("getRenameText");
+            Class<?> anvilViewClass = Class.forName("org.bukkit.inventory.AnvilView");
+            getRenameTextMethod = anvilViewClass.getMethod("getRenameText");
+            setRepairCostMethod = anvilViewClass.getMethod("setRepairCost", int.class);
         } catch (Exception ignored) {
             // Paper API not available at compile time, use reflection at runtime
         }
@@ -59,6 +61,14 @@ public class AnvilNameInput implements Listener {
 
         sessions.put(player.getUniqueId(), new InputSession(callback));
         player.openInventory(anvil);
+
+        // 通过反射设置修理费用为0，避免玩家因经验不足无法取出结果
+        if (setRepairCostMethod != null) {
+            try {
+                setRepairCostMethod.invoke(player.getOpenInventory(), 0);
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     @EventHandler
@@ -72,25 +82,47 @@ public class AnvilNameInput implements Listener {
         // 点击结果槽(slot 2)：读取名称，关闭铁砧，执行回调
         if (rawSlot == 2) {
             InputSession session = sessions.remove(player.getUniqueId());
-            if (session == null) return;
+            if (session == null) {
+                Main.severe("AnvilNameInput: session is null for player " + player.getName());
+                return;
+            }
 
-            // 此时铁砧还开着，优先用反射读取 Paper AnvilView.getRenameText()
+            // 优先用反射读取 Paper AnvilView.getRenameText()
             String name = getRenameText(event.getView());
+            Main.info("[AnvilNameInput] getRenameText() = '" + name + "'");
 
-            // 反射失败则从结果物品(slot 2)的显示名读取
+            // 回退1: 从事件当前点击物品(结果物品)读取
+            if (name == null || name.isEmpty()) {
+                name = extractName(event.getCurrentItem());
+                Main.info("[AnvilNameInput] extractName(event.currentItem) = '" + name + "'");
+            }
+
+            // 回退2: 从铁砧库存 slot 2 读取
             if (name == null || name.isEmpty()) {
                 name = extractName(topInventory.getItem(2));
+                Main.info("[AnvilNameInput] extractName(slot2) = '" + name + "'");
             }
 
             final String finalName = name != null ? name : "";
+            Main.info("[AnvilNameInput] finalName = '" + finalName + "', scheduling callback");
 
             // 取消事件，防止纸片进入玩家背包
             event.setCancelled(true);
 
             // 下一 tick 关闭铁砧并执行回调
             Bukkit.getScheduler().runTask(Main.getInstance(), () -> {
-                player.closeInventory();
-                session.callback().accept(player, finalName);
+                try {
+                    player.closeInventory();
+                } catch (Exception e) {
+                    Main.severe("[AnvilNameInput] Failed to close inventory: " + e.getMessage());
+                }
+                try {
+                    session.callback().accept(player, finalName);
+                    Main.info("[AnvilNameInput] callback executed successfully");
+                } catch (Exception e) {
+                    Main.severe("[AnvilNameInput] callback threw exception: " + e.getMessage());
+                    e.printStackTrace();
+                }
             });
             return;
         }

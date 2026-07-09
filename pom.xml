@@ -19,7 +19,7 @@
     </properties>
     <groupId>com.artformgames</groupId>
     <artifactId>residencelist-parent</artifactId>
-    <version>1.4.8</version>
+    <version>1.4.9</version>
     <packaging>pom</packaging>
     <modules>
         <module>api</module>
