@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -39,8 +40,9 @@ public class AnvilNameInput implements Listener {
             Class<?> anvilViewClass = Class.forName("org.bukkit.inventory.AnvilView");
             getRenameTextMethod = anvilViewClass.getMethod("getRenameText");
             setRepairCostMethod = anvilViewClass.getMethod("setRepairCost", int.class);
-        } catch (Exception ignored) {
-            // Paper API not available at compile time, use reflection at runtime
+            Main.info("[AnvilNameInput] Paper AnvilView API loaded successfully.");
+        } catch (Exception e) {
+            Main.info("[AnvilNameInput] Paper AnvilView API not available, will use fallbacks. " + e.getMessage());
         }
     }
 
@@ -61,12 +63,23 @@ public class AnvilNameInput implements Listener {
 
         sessions.put(player.getUniqueId(), new InputSession(callback));
         player.openInventory(anvil);
+    }
 
-        // 通过反射设置修理费用为0，避免玩家因经验不足无法取出结果
+    /**
+     * 每次铁砧准备结果时，将修理费设为0，确保玩家无需经验等级也能获取结果。
+     */
+    @EventHandler
+    public void onPrepare(PrepareAnvilEvent event) {
+        if (!(event.getInventory().getHolder() instanceof InputHolder)) return;
+        setRepairCost(event.getView(), 0);
+    }
+
+    private static void setRepairCost(@NotNull org.bukkit.inventory.InventoryView view, int cost) {
         if (setRepairCostMethod != null) {
             try {
-                setRepairCostMethod.invoke(player.getOpenInventory(), 0);
-            } catch (Exception ignored) {
+                setRepairCostMethod.invoke(view, cost);
+            } catch (Exception e) {
+                Main.severe("[AnvilNameInput] setRepairCost failed: " + e.getMessage());
             }
         }
     }
@@ -166,14 +179,14 @@ public class AnvilNameInput implements Listener {
      * 通过反射调用 Paper 的 AnvilView.getRenameText()
      */
     private static String getRenameText(@NotNull org.bukkit.inventory.InventoryView view) {
-        if (getRenameTextMethod != null) {
-            try {
-                Object result = getRenameTextMethod.invoke(view);
-                return result != null ? result.toString() : null;
-            } catch (Exception ignored) {
-            }
+        if (getRenameTextMethod == null) return null;
+        try {
+            Object result = getRenameTextMethod.invoke(view);
+            return result != null ? result.toString() : null;
+        } catch (Exception e) {
+            Main.severe("[AnvilNameInput] getRenameText reflection failed: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
     private static String extractName(@Nullable ItemStack item) {
