@@ -25,8 +25,8 @@ import java.util.function.BiConsumer;
 
 /**
  * 使用 Bukkit 原生铁砧 GUI 实现文本输入。
- * 关键：不取消结果槽(slot 2)的点击，让铁砧正常处理重命名。
- * 玩家取出结果物品后铁砧自动关闭，在 onClose 中读取名称并回调。
+ * 关键：在 onClick 中点击结果槽时就读取名称（此时铁砧还开着），
+ * 存入 session，onClose 时使用。不取消结果槽点击，让铁砧正常关闭。
  */
 public class AnvilNameInput implements Listener {
 
@@ -69,9 +69,25 @@ public class AnvilNameInput implements Listener {
 
         int rawSlot = event.getRawSlot();
 
-        // 允许点击结果槽(slot 2)，不取消——让铁砧正常处理重命名
+        // 点击结果槽(slot 2)：在铁砧处理之前读取名称
         if (rawSlot == 2) {
-            // 不取消事件，玩家取出结果后铁砧自动关闭，由 onClose 处理回调
+            InputSession session = sessions.get(player.getUniqueId());
+            if (session == null) return;
+
+            // 此时铁砧还开着，结果物品还在 slot 2
+            // 优先用反射读取 Paper AnvilView.getRenameText()
+            String name = getRenameText(event.getView());
+
+            // 反射失败则从结果物品(slot 2)的显示名读取
+            if (name == null || name.isEmpty()) {
+                name = extractName(topInventory.getItem(2));
+            }
+
+            // 存入 session，标记为已提交
+            session.setName(name != null ? name : "");
+            session.setSubmitted(true);
+
+            // 不取消事件，让铁砧正常处理（玩家取出结果 → 铁砧关闭 → onClose 触发）
             return;
         }
 
@@ -95,19 +111,22 @@ public class AnvilNameInput implements Listener {
         InputSession session = sessions.remove(player.getUniqueId());
         if (session == null) return;
 
-        // 读取名称：优先用反射获取 Paper AnvilView.getRenameText()
-        String name = getRenameText(event.getView());
-
-        // 反射失败则从输入槽(slot 0)的物品名读取（铁砧会更新输入物品的显示名）
-        if (name == null || name.isEmpty()) {
-            name = extractName(event.getInventory().getItem(0));
+        String name;
+        if (session.isSubmitted()) {
+            // 玩家点击了结果槽，名称已在 onClick 中读取
+            name = session.getName();
+        } else {
+            // 玩家直接关闭（ESC），尝试读取
+            name = getRenameText(event.getView());
+            if (name == null || name.isEmpty()) {
+                name = extractName(event.getInventory().getItem(0));
+            }
         }
 
         final String finalName = (name != null) ? name : "";
 
-        // 移除玩家可能拿到的结果物品（重命名的纸）
         Bukkit.getScheduler().runTask(Main.getInstance(), () -> {
-            // 清除光标上的物品
+            // 清除光标上的物品（防止玩家拿到重命名的纸）
             if (player.getItemOnCursor() != null && player.getItemOnCursor().getType() == Material.PAPER) {
                 player.setItemOnCursor(null);
             }
@@ -141,7 +160,34 @@ public class AnvilNameInput implements Listener {
         return meta.hasDisplayName() ? meta.getDisplayName() : "";
     }
 
-    private record InputSession(@NotNull BiConsumer<Player, String> callback) {
+    private static class InputSession {
+        private final @NotNull BiConsumer<Player, String> callback;
+        private String name;
+        private boolean submitted;
+
+        InputSession(@NotNull BiConsumer<Player, String> callback) {
+            this.callback = callback;
+        }
+
+        @NotNull BiConsumer<Player, String> callback() {
+            return callback;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        void setName(String name) {
+            this.name = name;
+        }
+
+        boolean isSubmitted() {
+            return submitted;
+        }
+
+        void setSubmitted(boolean submitted) {
+            this.submitted = submitted;
+        }
     }
 
     public static class InputHolder implements InventoryHolder {
