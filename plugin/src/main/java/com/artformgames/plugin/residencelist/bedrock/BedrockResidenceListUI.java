@@ -301,51 +301,53 @@ public class BedrockResidenceListUI {
 
         form.content(content.toString());
 
+        // 按钮索引动态计算：传送按钮仅在 canTeleport 时存在，
+        // 因此不能使用固定的 case 0/1/2/3，否则他人领地（3按钮）回调会错位。
+        int btnIndex = 0;
         form.button("§0查看详细信息", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        final int btnView = btnIndex++;
+        final int btnTeleport;
         if (resData.canTeleport(player)) {
             form.button("§0传送到领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            btnTeleport = btnIndex++;
+        } else {
+            btnTeleport = -1;
         }
         if (data.isPinned(residence.getName())) {
             form.button("§0取消置顶", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         } else {
             form.button("§0置顶领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
+        final int btnPin = btnIndex++;
         form.button("§0返回列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-
-        final boolean canTeleport = resData.canTeleport(player);
-        final boolean isPinned = data.isPinned(residence.getName());
+        final int btnBack = btnIndex;
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                switch (clicked) {
-                    case 0 -> {
-                        if (resData.isOwner(player)) {
-                            BedrockResidenceManageUI.open(player, resData, owner);
-                        } else {
-                            BedrockResidenceInfoUI.open(player, resData, owner);
-                        }
+                if (clicked == btnView) {
+                    if (resData.isOwner(player)) {
+                        BedrockResidenceManageUI.open(player, resData, owner);
+                    } else {
+                        BedrockResidenceInfoUI.open(player, resData, owner);
                     }
-                    case 1 -> {
-                        if (canTeleport) {
-                            residence.tpToResidence(player, player, player.hasPermission("residence.admin"));
-                            PluginMessages.TELEPORT.SOUND.playTo(player);
-                        }
+                } else if (btnTeleport >= 0 && clicked == btnTeleport) {
+                    residence.tpToResidence(player, player, player.hasPermission("residence.admin"));
+                    PluginMessages.TELEPORT.SOUND.playTo(player);
+                } else if (clicked == btnPin) {
+                    if (data.isPinned(residence.getName())) {
+                        data.removePin(residence.getName());
+                        PluginMessages.UNPIN.SOUND.playTo(player);
+                        PluginMessages.UNPIN.MESSAGE.sendTo(player, resData.getDisplayName());
+                    } else {
+                        data.setPin(residence.getName(), 0);
+                        PluginMessages.PIN.SOUND.playTo(player);
+                        PluginMessages.PIN.MESSAGE.sendTo(player, resData.getDisplayName());
                     }
-                    case 2 -> {
-                        if (isPinned) {
-                            data.removePin(residence.getName());
-                            PluginMessages.UNPIN.SOUND.playTo(player);
-                            PluginMessages.UNPIN.MESSAGE.sendTo(player, resData.getDisplayName());
-                        } else {
-                            data.setPin(residence.getName(), 0);
-                            PluginMessages.PIN.SOUND.playTo(player);
-                            PluginMessages.PIN.MESSAGE.sendTo(player, resData.getDisplayName());
-                        }
-                        openList(player, owner);
-                    }
-                    case 3 -> openList(player, owner);
+                    openList(player, owner);
+                } else if (clicked == btnBack) {
+                    openList(player, owner);
                 }
             });
         });
