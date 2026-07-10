@@ -19,8 +19,7 @@ import java.util.List;
 /**
  * 基岩版领地系统主菜单及领地列表界面（SimpleForm）。
  * <p>
- * 主菜单提供三个入口：领地传送、领地列表、创建领地。
- * 领地列表对应 Java 版 {@link com.artformgames.plugin.residencelist.ui.ResidenceListUI}。
+ * 主菜单提供四个入口：个人领地传送、个人领地列表、公开领地列表、创建个人领地。
  */
 public class BedrockResidenceListUI {
 
@@ -29,18 +28,16 @@ public class BedrockResidenceListUI {
 
     /**
      * 打开主菜单。
-     *
-     * @param player 目标玩家
      */
     public static void open(Player player) {
-        sendMainMenu(player, null);
+        sendMainMenu(player);
     }
 
     /**
      * 打开领地列表（带筛选）。
      *
      * @param player 目标玩家
-     * @param owner  筛选领地主人，null 表示显示全部
+     * @param owner  筛选领地主人，null 表示显示全部公开
      */
     public static void openList(Player player, String owner) {
         UserListData data = ResidenceListAPI.getUserManager().getNullable(player.getUniqueId());
@@ -60,15 +57,16 @@ public class BedrockResidenceListUI {
 
     // ======================== 主菜单 ========================
 
-    private static void sendMainMenu(Player player, String ownerFilter) {
+    private static void sendMainMenu(Player player) {
         SimpleForm.Builder form = SimpleForm.builder()
                 .title("§a§l【领地系统-主菜单】");
 
         form.content("§f请选择您需要的功能:");
 
-        form.button("§d§l领地传送");
-        form.button("§e§l领地列表");
-        form.button("§a§l创建领地");
+        form.button("§d§l个人领地传送");
+        form.button("§e§l个人领地列表");
+        form.button("§e§l公开领地列表");
+        form.button("§a§l创建个人领地");
         form.button("§c§l关闭");
 
         form.validResultHandler(response -> {
@@ -76,10 +74,11 @@ public class BedrockResidenceListUI {
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
                 switch (clicked) {
-                    case 0 -> sendTeleportList(player, ownerFilter);
-                    case 1 -> openList(player, ownerFilter);
-                    case 2 -> BedrockCreateResidenceUI.open(player, ownerFilter);
-                    // case 3 -> 关闭
+                    case 0 -> sendTeleportList(player);           // 个人领地传送
+                    case 1 -> openList(player, player.getName());  // 个人领地列表
+                    case 2 -> openList(player, null);             // 公开领地列表
+                    case 3 -> BedrockCreateResidenceUI.open(player, null); // 创建个人领地
+                    // case 4 -> 关闭
                 }
             });
         });
@@ -87,16 +86,17 @@ public class BedrockResidenceListUI {
         BedrockFormUtil.sendForm(player, form);
     }
 
-    // ======================== 领地传送 ========================
+    // ======================== 个人领地传送 ========================
 
-    private static void sendTeleportList(Player player, String ownerFilter) {
+    private static void sendTeleportList(Player player) {
         UserListData data = ResidenceListAPI.getUserManager().getNullable(player.getUniqueId());
         if (data == null) {
             PluginMessages.LOAD_FAILED.sendTo(player);
             return;
         }
 
-        List<ClaimedResidence> residences = collectResidences(player, data, null).stream()
+        // 只显示自己拥有的、可传送的领地
+        List<ClaimedResidence> residences = collectResidences(player, data, player.getName()).stream()
                 .filter(res -> {
                     ResidenceData d = Main.getInstance().getResidenceManager().getResidence(res);
                     return d.canTeleport(player);
@@ -105,17 +105,17 @@ public class BedrockResidenceListUI {
 
         if (residences.isEmpty()) {
             SimpleForm.Builder form = SimpleForm.builder()
-                    .title("§d§l【领地系统-领地传送】")
+                    .title("§d§l【领地系统-个人领地传送】")
                     .content("§f当前没有可传送的领地。")
                     .button("§e§l返回主菜单");
             form.validResultHandler(response ->
-                    BedrockFormUtil.runSync(() -> sendMainMenu(player, ownerFilter)));
+                    BedrockFormUtil.runSync(() -> sendMainMenu(player)));
             BedrockFormUtil.sendForm(player, form);
             return;
         }
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§d§l【领地系统-领地传送】");
+                .title("§d§l【领地系统-个人领地传送】");
 
         form.content("§f点击领地即可传送:");
 
@@ -136,11 +136,10 @@ public class BedrockResidenceListUI {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
                 if (clicked < finalResidences.size()) {
                     ClaimedResidence res = finalResidences.get(clicked);
-                    ResidenceData resData = Main.getInstance().getResidenceManager().getResidence(res);
                     res.tpToResidence(player, player, player.hasPermission("residence.admin"));
                     PluginMessages.TELEPORT.SOUND.playTo(player);
                 } else if (clicked == backBtnIndex) {
-                    sendMainMenu(player, ownerFilter);
+                    sendMainMenu(player);
                 }
             });
         });
@@ -176,8 +175,11 @@ public class BedrockResidenceListUI {
     }
 
     private static void sendListForm(Player player, UserListData data, String owner, List<ClaimedResidence> residences) {
+        boolean isPersonal = owner != null && owner.equals(player.getName());
+        String titleName = isPersonal ? "个人领地列表" : "公开领地列表";
+
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-领地列表】");
+                .title("§e§l【领地系统-" + titleName + "】");
 
         StringBuilder content = new StringBuilder();
         if (owner != null) {
@@ -218,17 +220,15 @@ public class BedrockResidenceListUI {
 
         // 功能按钮
         form.button("§e§l切换排序方式");
-        form.button(owner == null ? "§e§l查看我的领地" : "§e§l查看所有领地");
         form.button("§a§l创建领地");
         form.button("§e§l返回主菜单");
         form.button("§c§l关闭");
 
         final List<ClaimedResidence> finalResidences = residences;
         final int sortBtnIndex = finalResidences.size();
-        final int filterBtnIndex = finalResidences.size() + 1;
-        final int createBtnIndex = finalResidences.size() + 2;
-        final int backBtnIndex = finalResidences.size() + 3;
-        // closeBtnIndex = finalResidences.size() + 4
+        final int createBtnIndex = finalResidences.size() + 1;
+        final int backBtnIndex = finalResidences.size() + 2;
+        // closeBtnIndex = finalResidences.size() + 3
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -240,15 +240,12 @@ public class BedrockResidenceListUI {
                     data.setSortFunction(data.getSortFunction().next());
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
                     openList(player, owner);
-                } else if (clicked == filterBtnIndex) {
-                    PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    openList(player, owner == null ? player.getName() : null);
                 } else if (clicked == createBtnIndex) {
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
                     BedrockCreateResidenceUI.open(player, owner);
                 } else if (clicked == backBtnIndex) {
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    sendMainMenu(player, owner);
+                    sendMainMenu(player);
                 }
             });
         });
@@ -334,8 +331,11 @@ public class BedrockResidenceListUI {
     }
 
     private static void sendEmptyForm(Player player, String owner) {
+        boolean isPersonal = owner != null && owner.equals(player.getName());
+        String titleName = isPersonal ? "个人领地列表" : "公开领地列表";
+
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-领地列表】")
+                .title("§e§l【领地系统-" + titleName + "】")
                 .content("§f目前没有可显示的领地。")
                 .button("§a§l创建领地")
                 .button("§e§l返回主菜单")
@@ -347,7 +347,7 @@ public class BedrockResidenceListUI {
                 if (clicked == 0) {
                     BedrockCreateResidenceUI.open(player, owner);
                 } else if (clicked == 1) {
-                    sendMainMenu(player, owner);
+                    sendMainMenu(player);
                 }
             });
         });

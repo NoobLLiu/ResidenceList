@@ -1,6 +1,5 @@
 package com.artformgames.plugin.residencelist.bedrock;
 
-import com.artformgames.plugin.residencelist.ResidenceListAPI;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.bekvon.bukkit.residence.Residence;
@@ -96,43 +95,46 @@ public class BedrockCreateResidenceUI {
 
         form.content(content.toString());
 
-        // 按钮
+        // 按钮（顺序固定，索引计算简单）
+        // 0: 开/关自动选区模式（点击后直接关闭表单，让玩家走动操作）
         form.button(autoEnabled ? "§c§l关闭自动选区模式" : "§a§l开启自动选区模式");
-        form.button("§e§l刷新选区信息");
+        // 1: 返回上级菜单（退出自动圈地模式，返回主菜单）
+        form.button("§e§l返回上级菜单");
+        // 2: 关闭表单并开始圈地（保持自动圈地模式，关闭表单让玩家走动）
+        form.button("§d§l关闭表单并开始圈地");
+        // 3: 确认选区（进入第二步）
         if (hasSelection) {
             form.button("§a§l确认选区");
         }
-        form.button("§e§l返回主菜单");
 
         final boolean finalHasSelection = hasSelection;
-        final int btnAuto = 0;
-        final int btnRefresh = 1;
-        final int btnConfirm = hasSelection ? 2 : -1;
-        final int btnBack = hasSelection ? 3 : 2;
+        final int btnBack = 1;
+        final int btnStartSelecting = 2;
+        final int btnConfirm = finalHasSelection ? 3 : -1;
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                if (clicked == btnAuto) {
+                if (clicked == 0) {
+                    // 开/关自动选区模式，切换后直接关闭表单
                     Residence.getInstance().getAutoSelectionManager().switchAutoSelection(player);
-                    sendCreateForm(player, ownerFilter);
-                } else if (clicked == btnRefresh) {
-                    sendCreateForm(player, ownerFilter);
-                } else if (clicked == btnConfirm) {
-                    sendConfirmForm(player, ownerFilter);
+                    // 不重新打开表单，让玩家走动操作
                 } else if (clicked == btnBack) {
+                    // 返回上级菜单：退出自动圈地模式
                     disableAutoSelection(player);
                     BedrockResidenceListUI.open(player);
+                } else if (clicked == btnStartSelecting) {
+                    // 关闭表单并开始圈地：保持自动圈地模式不变，直接关闭表单
+                    // 不做任何事，表单自动关闭
+                } else if (clicked == btnConfirm) {
+                    sendConfirmForm(player, ownerFilter);
                 }
             });
         });
 
-        // 玩家直接关闭表单时，自动关闭自动圈地模式
-        form.closedResultHandler(() -> BedrockFormUtil.runSync(() -> {
-            disableAutoSelection(player);
-            BedrockResidenceListUI.open(player);
-        }));
+        // 玩家直接 ESC 关闭表单：等同于"关闭表单并开始圈地"，保持自动圈地模式
+        // 不设置 closedResultHandler，即不执行任何操作（保持自动圈地模式）
 
         BedrockFormUtil.sendForm(player, form);
     }
@@ -198,7 +200,9 @@ public class BedrockCreateResidenceUI {
                 return;
             }
 
-            String name = response.asInput(0);
+            // 使用 response.next() 而非 asInput(0)，因为 label 不产生响应值
+            // next() 会自动跳过 label，返回第一个有响应值的组件（即 input）
+            String name = response.next();
             if (name == null || name.isBlank()) {
                 PluginMessages.CREATE.FAILED_SOUND.playTo(player);
                 BedrockFormUtil.runSync(() -> sendCreateForm(player, ownerFilter));
