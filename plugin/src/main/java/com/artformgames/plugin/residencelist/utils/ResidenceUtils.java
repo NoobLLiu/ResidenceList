@@ -28,4 +28,13 @@ public class ResidenceUtils {
         return residence.isOwner(viewer);
     }
 
+    public static void toggleAutoSelection(@NotNull Player player) {
+        boolean currentlyEnabled = Residence.getInstance().getAutoSelectionManager()
+                .getList().containsKey(player.getUniqueId());
+        if (!currentlyEnabled) {
+            Residence.getInstance().getSelectionManager().selectBySize(player, 0, 0, 0);
+        }
+        Residence.getInstance().getAutoSelectionManager().switchAutoSelection(player);
+    }
+
 }

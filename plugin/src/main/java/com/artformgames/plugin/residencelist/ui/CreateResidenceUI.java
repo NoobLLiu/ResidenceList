@@ -7,6 +7,7 @@ import cc.carm.lib.easyplugin.utils.ColorParser;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
+import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.permissions.PermissionGroup;
@@ -68,7 +69,7 @@ public class CreateResidenceUI extends GUI {
             public void onClick(Player clicker, ClickType type) {
                 PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
                 clicker.closeInventory();
-                Residence.getInstance().getAutoSelectionManager().switchAutoSelection(clicker);
+                ResidenceUtils.toggleAutoSelection(clicker);
                 CreateResidenceUI.open(clicker, owner);
             }
         });
@@ -122,7 +123,7 @@ public class CreateResidenceUI extends GUI {
                 PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
                 if (Residence.getInstance().getAutoSelectionManager()
                         .getList().containsKey(clicker.getUniqueId())) {
-                    Residence.getInstance().getAutoSelectionManager().switchAutoSelection(clicker);
+                    ResidenceUtils.toggleAutoSelection(clicker);
                 }
                 clicker.closeInventory();
                 ResidenceListUI.open(clicker, owner);

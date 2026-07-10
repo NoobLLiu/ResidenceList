@@ -2,6 +2,7 @@ package com.artformgames.plugin.residencelist.bedrock;
 
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
+import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.permissions.PermissionGroup;
@@ -119,7 +120,7 @@ public class BedrockCreateResidenceUI {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
                 if (clicked == 0) {
                     // 开/关自动选区模式，切换后直接关闭表单
-                    Residence.getInstance().getAutoSelectionManager().switchAutoSelection(player);
+                    ResidenceUtils.toggleAutoSelection(player);
                     // 不重新打开表单，让玩家走动操作
                 } else if (clicked == btnBack) {
                     // 返回上级菜单：退出自动圈地模式
