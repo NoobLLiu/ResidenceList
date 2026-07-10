@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.geysermc.cumulus.form.Form;
 import org.geysermc.cumulus.form.util.FormBuilder;
+import org.geysermc.cumulus.util.FormImage;
 import org.geysermc.floodgate.api.FloodgateApi;
 
 /**
@@ -15,6 +16,9 @@ import org.geysermc.floodgate.api.FloodgateApi;
  * 当 Floodgate 未安装时，所有检测均返回 false，插件优雅降级至 Java 版 GUI。
  */
 public final class BedrockFormUtil {
+
+    /** 占位图标路径（基岩版内置的草方块纹理） */
+    public static final String BUTTON_ICON = "textures/blocks/grass_side_carried";
 
     private BedrockFormUtil() {
     }

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.cumulus.form.ModalForm;
 import org.geysermc.cumulus.form.SimpleForm;
+import org.geysermc.cumulus.util.FormImage;
 
 import java.util.List;
 
@@ -73,14 +74,14 @@ public class BedrockResidenceManageUI {
         form.content(content.toString());
 
         // 功能按钮
-        form.button("§0编辑昵称");
-        form.button("§0编辑描述");
-        form.button("§0编辑图标");
-        form.button(residenceData.isPublicDisplayed() ? "§0切换为私有" : "§0切换为公开");
-        form.button("§0传送到领地");
-        form.button("§0设置传送点");
-        form.button("§0管理评价 §f(" + residenceData.getRates().size() + ")");
-        form.button("§0返回领地列表");
+        form.button("§0编辑昵称", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0编辑描述", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0编辑图标", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button(residenceData.isPublicDisplayed() ? "§0切换为私有" : "§0切换为公开", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0传送到领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0设置传送点", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0管理评价 §f(" + residenceData.getRates().size() + ")", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回领地列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -283,7 +284,7 @@ public class BedrockResidenceManageUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§e【领地系统-管理评价】")
                     .content("§f目前暂无评价。")
-                    .button("§0返回");
+                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendManageMenu(player, residenceData, ownerFilter)));
@@ -315,9 +316,9 @@ public class BedrockResidenceManageUI {
             String author = rate.getAuthorName() != null ? rate.getAuthorName() : "?";
             String btnText = (rate.recommend() ? "§a赞 " : "§c踩 ") + "§f" + author;
             if (allowDelete) btnText += " §c[点击删除]";
-            form.button(btnText);
+            form.button(btnText, FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
-        form.button("§0返回");
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
         final boolean finalAllowDelete = allowDelete;
         form.validResultHandler(response -> {

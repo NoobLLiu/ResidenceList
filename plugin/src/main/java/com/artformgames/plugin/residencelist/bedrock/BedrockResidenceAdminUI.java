@@ -12,6 +12,7 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.geysermc.cumulus.form.SimpleForm;
+import org.geysermc.cumulus.util.FormImage;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -46,7 +47,7 @@ public class BedrockResidenceAdminUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§a【领地系统-管理员领地列表】")
                     .content("§f目前没有领地。")
-                    .button("§0关闭");
+                    .button("§0关闭", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
             BedrockFormUtil.sendForm(player, form);
             return;
         }
@@ -88,13 +89,13 @@ public class BedrockResidenceAdminUI {
             btnText.append("\n§f规模: §f").append(res.getMainArea().getSize());
             btnText.append(" §f| §a赞: ").append(likes).append(" §f| §c踩: ").append(dislikes);
 
-            form.button(btnText.toString());
+            form.button(btnText.toString(), FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
 
         // 功能按钮
-        form.button("§0切换排序方式");
-        form.button(owner == null ? "§0按主人筛选" : "§0查看所有领地");
-        form.button("§0关闭");
+        form.button("§0切换排序方式", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button(owner == null ? "§0按主人筛选" : "§0查看所有领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0关闭", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
         final List<ClaimedResidence> finalResidences = residences;
         final int sortBtnIndex = finalResidences.size();

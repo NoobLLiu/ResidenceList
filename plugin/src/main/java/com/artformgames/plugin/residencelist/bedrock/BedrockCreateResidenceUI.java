@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.cumulus.form.SimpleForm;
+import org.geysermc.cumulus.util.FormImage;
 
 import java.lang.reflect.Method;
 
@@ -97,14 +98,14 @@ public class BedrockCreateResidenceUI {
 
         // 按钮（顺序固定，索引计算简单）
         // 0: 开/关自动选区模式（点击后直接关闭表单，让玩家走动操作）
-        form.button(autoEnabled ? "§0关闭自动选区模式" : "§0开启自动选区模式");
+        form.button(autoEnabled ? "§0关闭自动选区模式" : "§0开启自动选区模式", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         // 1: 返回上级菜单（退出自动圈地模式，返回主菜单）
-        form.button("§0返回上级菜单");
+        form.button("§0返回上级菜单", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         // 2: 关闭表单并开始圈地（保持自动圈地模式，关闭表单让玩家走动）
-        form.button("§0关闭表单并开始圈地");
+        form.button("§0关闭表单并开始圈地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         // 3: 确认选区（进入第二步）
         if (hasSelection) {
-            form.button("§0确认选区");
+            form.button("§0确认选区", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
 
         final boolean finalHasSelection = hasSelection;
