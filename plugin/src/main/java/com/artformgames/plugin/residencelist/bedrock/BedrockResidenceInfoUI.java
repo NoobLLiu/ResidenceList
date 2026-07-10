@@ -125,8 +125,6 @@ public class BedrockResidenceInfoUI {
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【领地系统-评分评价】");
 
-        form.label("§e请对该领地进行评价:");
-
         // 评价类型下拉
         String[] rateOptions = {"§a赞 - 推荐", "§c踩 - 不推荐"};
         int defaultOption = (existing != null && !existing.recommend()) ? 1 : 0;
@@ -134,16 +132,14 @@ public class BedrockResidenceInfoUI {
 
         // 评价内容输入
         String defaultComment = existing != null ? existing.content() : "";
-        form.input("评价内容", "输入你的评价...", defaultComment);
-
-        if (existing != null) {
-            form.label("§e你已评价过此领地，再次提交将覆盖旧评价。\n§e提交空内容将删除评价。");
-        }
+        String inputTitle = existing != null
+                ? "评价内容（空内容将删除评价）"
+                : "评价内容";
+        form.input(inputTitle, "输入你的评价...", defaultComment);
 
         form.validResultHandler(response -> {
-            String rateStr = response.next();
-            int rateType = rateStr != null ? Integer.parseInt(rateStr) : 0;
-            String comment = response.next();
+            int rateType = response.asDropdown(0);
+            String comment = response.asInput(1);
 
             BedrockFormUtil.runSync(() -> {
                 boolean recommend = (rateType == 0);

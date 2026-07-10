@@ -124,13 +124,13 @@ public class BedrockResidenceManageUI {
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【领地系统-编辑昵称】");
 
-        form.label("§f为领地 §e" + BedrockFormUtil.stripColor(residenceData.getDisplayName()) + " §f设置别名");
-        form.label("§f别名长度不能超过 16 个字符");
-        form.input("领地别名", "输入新的别名...",
+        String displayName = BedrockFormUtil.stripColor(residenceData.getDisplayName());
+        form.input("为领地 " + displayName + " 设置别名（不超过16字符）",
+                "输入新的别名...",
                 residenceData.getAliasName() != null ? residenceData.getAliasName() : "");
 
         form.validResultHandler(response -> {
-            String newName = response.next();
+            String newName = response.asInput(0);
             BedrockFormUtil.runSync(() -> {
                 if (newName == null || newName.isBlank()) {
                     PluginMessages.EDIT.FAILED_SOUND.playTo(player);
@@ -163,13 +163,13 @@ public class BedrockResidenceManageUI {
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【领地系统-编辑描述】");
 
-        form.label("§f为领地 §e" + BedrockFormUtil.stripColor(residenceData.getDisplayName()) + " §f编辑描述");
-        form.label("§f你可以使用 \\n 进行换行");
+        String displayName = BedrockFormUtil.stripColor(residenceData.getDisplayName());
         String currentDesc = residenceData.getDescription().isEmpty() ? "" : String.join("\\n", residenceData.getDescription());
-        form.input("领地描述", "输入描述内容...", currentDesc);
+        form.input("为领地 " + displayName + " 编辑描述（可用\\n换行）",
+                "输入描述内容...", currentDesc);
 
         form.validResultHandler(response -> {
-            String desc = response.next();
+            String desc = response.asInput(0);
             BedrockFormUtil.runSync(() -> {
                 if (desc == null || desc.isBlank()) {
                     residenceData.modify(d -> d.setDescription(List.of()));
@@ -196,7 +196,7 @@ public class BedrockResidenceManageUI {
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【领地系统-编辑图标】");
 
-        form.label("§f为领地 §e" + BedrockFormUtil.stripColor(residenceData.getDisplayName()) + " §f选择图标");
+        String displayName = BedrockFormUtil.stripColor(residenceData.getDisplayName());
 
         // 提供常用的领地图标材质
         String[] iconOptions = {
@@ -217,11 +217,10 @@ public class BedrockResidenceManageUI {
             }
         }
 
-        form.dropdown("选择图标材质", defaultIndex, iconOptions);
+        form.dropdown("为领地 " + displayName + " 选择图标材质", defaultIndex, iconOptions);
 
         form.validResultHandler(response -> {
-            String next = response.next();
-            int selectedIndex = next != null ? Integer.parseInt(next) : 0;
+            int selectedIndex = response.asDropdown(0);
             String selectedIcon = iconOptions[selectedIndex];
             Material material = mapIconNameToMaterial(selectedIcon);
 

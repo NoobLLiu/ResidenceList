@@ -143,26 +143,19 @@ public class BedrockCreateResidenceUI {
 
     private static void sendConfirmForm(Player player, String ownerFilter) {
         boolean hasSelection = Residence.getInstance().getSelectionManager().hasPlacedBoth(player);
-        boolean autoEnabled = Residence.getInstance().getAutoSelectionManager()
-                .getList().containsKey(player.getUniqueId());
 
         CustomForm.Builder form = CustomForm.builder()
                 .title("§a【领地系统-创建领地-确认选区】");
 
-        // 选区信息
+        // 构建选区摘要信息，合并到 input 标题中（避免使用 label 导致索引偏移）
+        StringBuilder inputTitle = new StringBuilder();
         if (hasSelection) {
             CuboidArea area = Residence.getInstance().getSelectionManager().getSelectionCuboid(player);
             if (area != null) {
-                form.label("§f选区大小: §e" + area.getXSize() + "×" + area.getYSize() + "×" + area.getZSize());
-                form.label("§f总面积: §e" + area.getSize() + " 方块");
-                form.label("§f世界: §e" + area.getWorldName());
-
-                Location low = area.getLowLocation();
-                Location high = area.getHighLocation();
-                if (low != null && high != null) {
-                    form.label("§f坐标: §e(" + low.getBlockX() + "," + low.getBlockY() + "," + low.getBlockZ()
-                            + ") -> (" + high.getBlockX() + "," + high.getBlockY() + "," + high.getBlockZ() + ")");
-                }
+                inputTitle.append("选区 ").append(area.getXSize())
+                        .append("×").append(area.getYSize())
+                        .append("×").append(area.getZSize())
+                        .append(" (").append(area.getSize()).append("方块)");
 
                 ResidencePlayer rPlayer = Residence.getInstance().getPlayerManager().getResidencePlayer(player);
                 PermissionGroup group = rPlayer.getGroup();
@@ -174,24 +167,19 @@ public class BedrockCreateResidenceUI {
                     String formatted = Residence.getInstance().getEconomyManager() != null
                             ? Residence.getInstance().getEconomyManager().format(cost)
                             : String.format("%.2f", cost);
-                    form.label("§f创建费用: §e" + formatted);
+                    inputTitle.append(" | 费用: ").append(formatted);
                 } else {
-                    form.label("§f创建费用: §a免费");
+                    inputTitle.append(" | 免费");
                 }
-                form.label("§f领地数量: §e" + rPlayer.getResAmount() + "§f/§e" + rPlayer.getMaxRes());
+                inputTitle.append(" | 领地: ").append(rPlayer.getResAmount())
+                        .append("/").append(rPlayer.getMaxRes());
+                inputTitle.append("\n请输入领地名称（英文/数字/下划线）");
             }
         } else {
-            form.label("§c当前没有选区，请先选取区域！");
-            form.label("§f请返回上一级菜单选取区域。");
+            inputTitle.append("当前没有选区，请返回选取区域！\n请输入领地名称");
         }
 
-        // 自动圈地模式状态
-        form.label("§f自动圈地模式: " + (autoEnabled ? "§a已开启" : "§c已关闭"));
-
-        // 输入框
-        form.label("§e请输入领地名称");
-        form.label("§f支持英文、数字、下划线");
-        form.input("领地名称", "请输入领地名称...", "");
+        form.input(inputTitle.toString(), "请输入领地名称...", "");
 
         form.validResultHandler(response -> {
             if (!hasSelection) {
@@ -200,9 +188,7 @@ public class BedrockCreateResidenceUI {
                 return;
             }
 
-            // 使用 response.next() 而非 asInput(0)，因为 label 不产生响应值
-            // next() 会自动跳过 label，返回第一个有响应值的组件（即 input）
-            String name = response.next();
+            String name = response.asInput(0);
             if (name == null || name.isBlank()) {
                 PluginMessages.CREATE.FAILED_SOUND.playTo(player);
                 BedrockFormUtil.runSync(() -> sendCreateForm(player, ownerFilter));
