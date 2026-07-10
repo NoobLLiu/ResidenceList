@@ -138,7 +138,8 @@ public class BedrockResidenceInfoUI {
         }
 
         form.validResultHandler(response -> {
-            int rateType = response.asDropdown();
+            String rateStr = response.next();
+            int rateType = rateStr != null ? Integer.parseInt(rateStr) : 0;
             String comment = response.next();
 
             BedrockFormUtil.runSync(() -> {

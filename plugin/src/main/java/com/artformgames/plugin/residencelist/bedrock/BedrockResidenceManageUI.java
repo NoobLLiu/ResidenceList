@@ -217,7 +217,8 @@ public class BedrockResidenceManageUI {
         form.dropdown("选择图标材质", defaultIndex, iconOptions);
 
         form.validResultHandler(response -> {
-            int selectedIndex = response.asDropdown();
+            String next = response.next();
+            int selectedIndex = next != null ? Integer.parseInt(next) : 0;
             String selectedIcon = iconOptions[selectedIndex];
             Material material = mapIconNameToMaterial(selectedIcon);
 
