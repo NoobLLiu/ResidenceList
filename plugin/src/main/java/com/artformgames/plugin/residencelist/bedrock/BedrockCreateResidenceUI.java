@@ -97,28 +97,46 @@ public class BedrockCreateResidenceUI {
 
         form.content(content.toString());
 
-        // 按钮（顺序固定，索引计算简单）
+        // 按钮索引动态计算：Y轴扩展和确认按钮仅在 hasSelection 时存在
+        int btnIndex = 0;
+
         // 0: 开/关自动选区模式（点击后直接关闭表单，让玩家走动操作）
         form.button(autoEnabled ? "§0关闭自动选区模式" : "§0开启自动选区模式", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        final int btnAuto = btnIndex++;
+
         // 1: 返回上级菜单（退出自动圈地模式，返回主菜单）
         form.button("§0返回上级菜单", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        final int btnBack = btnIndex++;
+
         // 2: 关闭表单并开始圈地（保持自动圈地模式，关闭表单让玩家走动）
         form.button("§0关闭表单并开始圈地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        // 3: 确认选区（进入第二步）
+        final int btnStartSelecting = btnIndex++;
+
+        // Y轴扩展按钮（仅有选区时显示）
+        final int btnSky, btnVert, btnBedrock, btnConfirm;
         if (hasSelection) {
+            form.button("§0扩展选区至天空(Y=320)", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            btnSky = btnIndex++;
+            form.button("§0扩展选区至全高(2D领地)", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            btnVert = btnIndex++;
+            form.button("§0扩展选区至基岩(Y=-64)", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            btnBedrock = btnIndex++;
             form.button("§0确认选区", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            btnConfirm = btnIndex++;
+        } else {
+            btnSky = -1;
+            btnVert = -1;
+            btnBedrock = -1;
+            btnConfirm = -1;
         }
 
         final boolean finalHasSelection = hasSelection;
-        final int btnBack = 1;
-        final int btnStartSelecting = 2;
-        final int btnConfirm = finalHasSelection ? 3 : -1;
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                if (clicked == 0) {
+                if (clicked == btnAuto) {
                     // 开/关自动选区模式，切换后直接关闭表单
                     ResidenceUtils.toggleAutoSelection(player);
                     // 不重新打开表单，让玩家走动操作
@@ -129,7 +147,16 @@ public class BedrockCreateResidenceUI {
                 } else if (clicked == btnStartSelecting) {
                     // 关闭表单并开始圈地：保持自动圈地模式不变，直接关闭表单
                     // 不做任何事，表单自动关闭
-                } else if (clicked == btnConfirm) {
+                } else if (btnSky >= 0 && clicked == btnSky) {
+                    ResidenceUtils.expandSky(player);
+                    sendCreateForm(player, ownerFilter);
+                } else if (btnVert >= 0 && clicked == btnVert) {
+                    ResidenceUtils.expandVert(player);
+                    sendCreateForm(player, ownerFilter);
+                } else if (btnBedrock >= 0 && clicked == btnBedrock) {
+                    ResidenceUtils.expandBedrock(player);
+                    sendCreateForm(player, ownerFilter);
+                } else if (btnConfirm >= 0 && clicked == btnConfirm) {
                     sendConfirmForm(player, ownerFilter);
                 }
             });

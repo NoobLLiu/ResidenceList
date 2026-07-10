@@ -37,4 +37,16 @@ public class ResidenceUtils {
         Residence.getInstance().getAutoSelectionManager().switchAutoSelection(player);
     }
 
+    public static void expandSky(@NotNull Player player) {
+        Residence.getInstance().getSelectionManager().sky(player, player.hasPermission("residence.admin"));
+    }
+
+    public static void expandBedrock(@NotNull Player player) {
+        Residence.getInstance().getSelectionManager().bedrock(player, player.hasPermission("residence.admin"));
+    }
+
+    public static void expandVert(@NotNull Player player) {
+        Residence.getInstance().getSelectionManager().vert(player, player.hasPermission("residence.admin"));
+    }
+
 }

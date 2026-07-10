@@ -116,6 +116,49 @@ public class CreateResidenceUI extends GUI {
             }
         });
 
+        // ===== Y轴扩展按钮 (slots 30, 31, 32) 仅在有选区时可用 =====
+        setItem(30, new GUIItem(buildSkyItem(hasSelection)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                if (!Residence.getInstance().getSelectionManager().hasPlacedBoth(clicker)) {
+                    PluginMessages.CREATE.NO_SELECTION.sendTo(clicker);
+                    PluginMessages.CREATE.FAILED_SOUND.playTo(clicker);
+                    return;
+                }
+                ResidenceUtils.expandSky(clicker);
+                CreateResidenceUI.open(clicker, owner);
+            }
+        });
+
+        setItem(31, new GUIItem(buildVertItem(hasSelection)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                if (!Residence.getInstance().getSelectionManager().hasPlacedBoth(clicker)) {
+                    PluginMessages.CREATE.NO_SELECTION.sendTo(clicker);
+                    PluginMessages.CREATE.FAILED_SOUND.playTo(clicker);
+                    return;
+                }
+                ResidenceUtils.expandVert(clicker);
+                CreateResidenceUI.open(clicker, owner);
+            }
+        });
+
+        setItem(32, new GUIItem(buildBedrockItem(hasSelection)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                if (!Residence.getInstance().getSelectionManager().hasPlacedBoth(clicker)) {
+                    PluginMessages.CREATE.NO_SELECTION.sendTo(clicker);
+                    PluginMessages.CREATE.FAILED_SOUND.playTo(clicker);
+                    return;
+                }
+                ResidenceUtils.expandBedrock(clicker);
+                CreateResidenceUI.open(clicker, owner);
+            }
+        });
+
         // ===== 返回按钮 (slot 49) 退出时自动关闭自动选取 =====
         setItem(49, new GUIItem(buildBackItem()) {
             @Override
@@ -262,6 +305,55 @@ public class CreateResidenceUI extends GUI {
                     PluginMessages.CREATE_GUI.ITEMS.BACK_NAME.parseLine(viewer)));
             meta.setLore(splitLore(
                     PluginMessages.CREATE_GUI.ITEMS.BACK_LORE.parseLine(viewer)));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    private ItemStack buildSkyItem(boolean hasSelection) {
+        ItemStack item = new ItemStack(hasSelection ? Material.WHITE_WOOL : Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorParser.parse("&f&l扩展选区至天空 (Y=320)"));
+            List<String> lore = new ArrayList<>();
+            lore.add(ColorParser.parse("&7将当前选区顶部扩展到世界高度上限"));
+            if (!hasSelection) {
+                lore.add(ColorParser.parse("&c需要先选取两个对角点"));
+            }
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    private ItemStack buildVertItem(boolean hasSelection) {
+        ItemStack item = new ItemStack(hasSelection ? Material.NETHER_STAR : Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorParser.parse("&e&l扩展选区至全高 (2D领地)"));
+            List<String> lore = new ArrayList<>();
+            lore.add(ColorParser.parse("&7将当前选区从基岩扩展到天空"));
+            lore.add(ColorParser.parse("&7适用于平面领地(忽略Y轴)"));
+            if (!hasSelection) {
+                lore.add(ColorParser.parse("&c需要先选取两个对角点"));
+            }
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    private ItemStack buildBedrockItem(boolean hasSelection) {
+        ItemStack item = new ItemStack(hasSelection ? Material.BEDROCK : Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorParser.parse("&8&l扩展选区至基岩 (Y=-64)"));
+            List<String> lore = new ArrayList<>();
+            lore.add(ColorParser.parse("&7将当前选区底部扩展到世界最低处"));
+            if (!hasSelection) {
+                lore.add(ColorParser.parse("&c需要先选取两个对角点"));
+            }
+            meta.setLore(lore);
             item.setItemMeta(meta);
         }
         return item;
