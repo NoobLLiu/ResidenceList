@@ -19,9 +19,11 @@ import java.util.List;
 /**
  * 基岩版领地系统主菜单及领地列表界面（SimpleForm）。
  * <p>
- * 主菜单提供四个入口：个人领地传送、个人领地列表、公开领地列表、创建个人领地。
+ * 按钮配色规则：第一行 §0§l（加粗黑色），第二行 §1（正常深蓝色）。
  */
 public class BedrockResidenceListUI {
+
+    private static final int PAGE_SIZE = 10;
 
     private BedrockResidenceListUI() {
     }
@@ -35,9 +37,6 @@ public class BedrockResidenceListUI {
 
     /**
      * 打开领地列表（带筛选）。
-     *
-     * @param player 目标玩家
-     * @param owner  筛选领地主人，null 表示显示全部公开
      */
     public static void openList(Player player, String owner) {
         UserListData data = ResidenceListAPI.getUserManager().getNullable(player.getUniqueId());
@@ -52,7 +51,7 @@ public class BedrockResidenceListUI {
             return;
         }
 
-        sendListForm(player, data, owner, residences);
+        sendListForm(player, data, owner, residences, 1);
     }
 
     // ======================== 主菜单 ========================
@@ -63,22 +62,21 @@ public class BedrockResidenceListUI {
 
         form.content("§f请选择您需要的功能:");
 
-        form.button("§d§l个人领地传送");
-        form.button("§e§l个人领地列表");
-        form.button("§e§l公开领地列表");
-        form.button("§a§l创建个人领地");
-        form.button("§c§l关闭");
+        form.button("§0§l个人领地传送");
+        form.button("§0§l个人领地列表");
+        form.button("§0§l公开领地列表");
+        form.button("§0§l创建个人领地");
+        form.button("§0§l关闭");
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
                 switch (clicked) {
-                    case 0 -> sendTeleportList(player);           // 个人领地传送
-                    case 1 -> openList(player, player.getName());  // 个人领地列表
-                    case 2 -> openList(player, null);             // 公开领地列表
-                    case 3 -> BedrockCreateResidenceUI.open(player, null); // 创建个人领地
-                    // case 4 -> 关闭
+                    case 0 -> sendTeleportList(player);
+                    case 1 -> openList(player, player.getName());
+                    case 2 -> openList(player, null);
+                    case 3 -> BedrockCreateResidenceUI.open(player, null);
                 }
             });
         });
@@ -95,7 +93,6 @@ public class BedrockResidenceListUI {
             return;
         }
 
-        // 只显示自己拥有的、可传送的领地
         List<ClaimedResidence> residences = collectResidences(player, data, player.getName()).stream()
                 .filter(res -> {
                     ResidenceData d = Main.getInstance().getResidenceManager().getResidence(res);
@@ -107,7 +104,7 @@ public class BedrockResidenceListUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§d§l【领地系统-个人领地传送】")
                     .content("§f当前没有可传送的领地。")
-                    .button("§e§l返回主菜单");
+                    .button("§0§l返回主菜单");
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendMainMenu(player)));
             BedrockFormUtil.sendForm(player, form);
@@ -122,10 +119,10 @@ public class BedrockResidenceListUI {
         for (ClaimedResidence res : residences) {
             ResidenceData resData = Main.getInstance().getResidenceManager().getResidence(res);
             String name = BedrockFormUtil.stripColor(resData.getDisplayName());
-            form.button("§d" + name + "\n§f主人: §e" + resData.getOwner());
+            form.button("§0§l" + name + "\n§1" + resData.getOwner());
         }
 
-        form.button("§e§l返回主菜单");
+        form.button("§0§l返回主菜单");
 
         final List<ClaimedResidence> finalResidences = residences;
         final int backBtnIndex = residences.size();
@@ -153,33 +150,39 @@ public class BedrockResidenceListUI {
         List<ClaimedResidence> display = new ArrayList<>();
         Comparator<ClaimedResidence> comparator = data.getSortFunction().residenceComparator(data.isSortReversed());
 
-        // 置顶领地优先
         data.getPinned().stream()
                 .map(ResidenceListAPI::getResidence)
                 .filter(res -> res != null && (owner == null || res.isOwner(owner)))
                 .filter(res -> ResidenceUtils.viewable(res, player))
                 .sorted(comparator).forEach(display::add);
 
-        // 其余领地
         ResidenceListAPI.listResidences().stream()
                 .filter(res -> !display.contains(res))
                 .filter(res -> owner == null || res.isOwner(owner))
                 .filter(res -> ResidenceUtils.viewable(res, player))
                 .sorted(comparator).forEach(display::add);
 
-        // 过滤可见性（公开或本人拥有）
         return display.stream().filter(r -> {
             ResidenceData d = Main.getInstance().getResidenceManager().getResidence(r);
             return d.isPublicDisplayed() || d.isOwner(player);
         }).toList();
     }
 
-    private static void sendListForm(Player player, UserListData data, String owner, List<ClaimedResidence> residences) {
+    private static void sendListForm(Player player, UserListData data, String owner,
+                                     List<ClaimedResidence> residences, int page) {
         boolean isPersonal = owner != null && owner.equals(player.getName());
         String titleName = isPersonal ? "个人领地列表" : "公开领地列表";
 
+        int totalPages = (int) Math.ceil((double) residences.size() / PAGE_SIZE);
+        if (page > totalPages) page = totalPages;
+        if (page < 1) page = 1;
+
+        int fromIndex = (page - 1) * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, residences.size());
+        List<ClaimedResidence> pageItems = residences.subList(fromIndex, toIndex);
+
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-" + titleName + "】");
+                .title("§e§l【领地系统-" + titleName + "】§f(第" + page + "页/共" + totalPages + "页)");
 
         StringBuilder content = new StringBuilder();
         if (owner != null) {
@@ -193,56 +196,73 @@ public class BedrockResidenceListUI {
         form.content(content.toString());
 
         // 领地按钮
-        for (ClaimedResidence res : residences) {
+        for (ClaimedResidence res : pageItems) {
             ResidenceData resData = Main.getInstance().getResidenceManager().getResidence(res);
             String name = BedrockFormUtil.stripColor(resData.getDisplayName());
             int likes = resData.countRate(ResidenceRate::recommend);
             int dislikes = resData.countRate(r -> !r.recommend());
-            int members = res.getTrustedPlayers().size() + 1;
-            long size = res.getMainArea().getSize();
-
             StringBuilder btnText = new StringBuilder();
             if (data.isPinned(res.getName())) btnText.append("§e★ ");
-            btnText.append("§a").append(name);
-            btnText.append("\n§f主人: §e").append(resData.getOwner());
-            btnText.append(" §f| 规模: §e").append(size);
-            btnText.append(" §f| 成员: §e").append(members);
-            btnText.append("\n§f赞: §a").append(likes).append(" §f踩: §c").append(dislikes);
+            btnText.append("§0§l").append(name);
+            // 第二行精简：去掉"主人:"，去掉竖线前后空格
+            btnText.append("\n§1").append(resData.getOwner());
+            btnText.append("|赞").append(likes).append("|踩").append(dislikes);
 
             if (!resData.getDescription().isEmpty()) {
                 String desc = BedrockFormUtil.stripColor(String.join(" ", resData.getDescription()));
-                if (desc.length() > 50) desc = desc.substring(0, 50) + "...";
-                btnText.append("\n§f").append(desc);
+                if (desc.length() > 40) desc = desc.substring(0, 40) + "...";
+                btnText.append("\n§1").append(desc);
             }
 
             form.button(btnText.toString());
         }
 
-        // 功能按钮
-        form.button("§e§l切换排序方式");
-        form.button("§a§l创建领地");
-        form.button("§e§l返回主菜单");
-        form.button("§c§l关闭");
+        // 分页和功能按钮
+        List<ClaimedResidence> finalResidences = residences;
+        int[] btnIndices = new int[4]; // prev, next, sort, back
+        int btnIndex = pageItems.size();
 
-        final List<ClaimedResidence> finalResidences = residences;
-        final int sortBtnIndex = finalResidences.size();
-        final int createBtnIndex = finalResidences.size() + 1;
-        final int backBtnIndex = finalResidences.size() + 2;
-        // closeBtnIndex = finalResidences.size() + 3
+        if (page > 1) {
+            form.button("§0§l上一页 §f(第" + (page - 1) + "页)");
+            btnIndices[0] = btnIndex++;
+        } else {
+            btnIndices[0] = -1;
+        }
+
+        if (page < totalPages) {
+            form.button("§0§l下一页 §f(第" + (page + 1) + "页)");
+            btnIndices[1] = btnIndex++;
+        } else {
+            btnIndices[1] = -1;
+        }
+
+        form.button("§0§l切换排序方式");
+        btnIndices[2] = btnIndex++;
+        form.button("§0§l返回主菜单");
+        btnIndices[3] = btnIndex;
+
+        final int currentPage = page;
+        final int prevBtnIndex = btnIndices[0];
+        final int nextBtnIndex = btnIndices[1];
+        final int sortBtnIndex = btnIndices[2];
+        final int backBtnIndex = btnIndices[3];
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
-                if (clicked < finalResidences.size()) {
+                if (clicked < pageItems.size()) {
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    showResidenceActionMenu(player, data, finalResidences.get(clicked), owner);
+                    showResidenceActionMenu(player, data, pageItems.get(clicked), owner);
+                } else if (prevBtnIndex >= 0 && clicked == prevBtnIndex) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(player);
+                    sendListForm(player, data, owner, finalResidences, currentPage - 1);
+                } else if (nextBtnIndex >= 0 && clicked == nextBtnIndex) {
+                    PluginConfig.GUI.CLICK_SOUND.playTo(player);
+                    sendListForm(player, data, owner, finalResidences, currentPage + 1);
                 } else if (clicked == sortBtnIndex) {
                     data.setSortFunction(data.getSortFunction().next());
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    openList(player, owner);
-                } else if (clicked == createBtnIndex) {
-                    PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    BedrockCreateResidenceUI.open(player, owner);
+                    sendListForm(player, data, owner, finalResidences, 1);
                 } else if (clicked == backBtnIndex) {
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
                     sendMainMenu(player);
@@ -254,7 +274,7 @@ public class BedrockResidenceListUI {
     }
 
     /**
-     * 显示某个领地的操作子菜单（查看详情/传送/置顶）。
+     * 操作子菜单。
      */
     private static void showResidenceActionMenu(Player player, UserListData data, ClaimedResidence residence, String owner) {
         ResidenceData resData = Main.getInstance().getResidenceManager().getResidence(residence);
@@ -278,16 +298,16 @@ public class BedrockResidenceListUI {
 
         form.content(content.toString());
 
-        form.button("§e§l查看详细信息");
+        form.button("§0§l查看详细信息");
         if (resData.canTeleport(player)) {
-            form.button("§d§l传送到领地");
+            form.button("§0§l传送到领地");
         }
         if (data.isPinned(residence.getName())) {
-            form.button("§c§l取消置顶");
+            form.button("§0§l取消置顶");
         } else {
-            form.button("§a§l置顶领地");
+            form.button("§0§l置顶领地");
         }
-        form.button("§e§l返回列表");
+        form.button("§0§l返回列表");
 
         final boolean canTeleport = resData.canTeleport(player);
         final boolean isPinned = data.isPinned(residence.getName());
@@ -337,16 +357,13 @@ public class BedrockResidenceListUI {
         SimpleForm.Builder form = SimpleForm.builder()
                 .title("§e§l【领地系统-" + titleName + "】")
                 .content("§f目前没有可显示的领地。")
-                .button("§a§l创建领地")
-                .button("§e§l返回主菜单")
-                .button("§c§l关闭");
+                .button("§0§l返回主菜单")
+                .button("§0§l关闭");
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
                 if (clicked == 0) {
-                    BedrockCreateResidenceUI.open(player, owner);
-                } else if (clicked == 1) {
                     sendMainMenu(player);
                 }
             });

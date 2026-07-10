@@ -77,12 +77,12 @@ public class BedrockResidenceInfoUI {
 
         // 功能按钮
         if (tpLoc != null && residenceData.canTeleport(player)) {
-            form.button("§d§l传送到领地");
+            form.button("§0§l传送到领地");
         }
-        form.button("§e§l评分 & 评价");
-        form.button("§e§l查看所有评价 §e(" + residenceData.getRates().size() + ")");
-        form.button("§e§l查看成员列表");
-        form.button("§e§l返回领地列表");
+        form.button("§0§l评分评价");
+        form.button("§0§l查看所有评价 §f(" + residenceData.getRates().size() + ")");
+        form.button("§0§l查看成员列表");
+        form.button("§0§l返回领地列表");
 
         final boolean hasTeleport = tpLoc != null && residenceData.canTeleport(player);
         final int btnRate = hasTeleport ? 1 : 0;
@@ -189,7 +189,7 @@ public class BedrockResidenceInfoUI {
             }
         }
         form.content(content.toString());
-        form.button("§e§l返回");
+        form.button("§0§l返回");
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() -> sendMainMenu(player, residenceData, ownerFilter)));
@@ -220,7 +220,7 @@ public class BedrockResidenceInfoUI {
         }
 
         form.content(content.toString());
-        form.button("§e§l返回");
+        form.button("§0§l返回");
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() -> sendMainMenu(player, residenceData, ownerFilter)));

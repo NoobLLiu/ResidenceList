@@ -46,7 +46,7 @@ public class BedrockResidenceAdminUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§a§l【领地系统-管理员领地列表】")
                     .content("§f目前没有领地。")
-                    .button("§c§l关闭");
+                    .button("§0§l关闭");
             BedrockFormUtil.sendForm(player, form);
             return;
         }
@@ -92,9 +92,9 @@ public class BedrockResidenceAdminUI {
         }
 
         // 功能按钮
-        form.button("§e§l切换排序方式");
-        form.button(owner == null ? "§e§l按主人筛选" : "§e§l查看所有领地");
-        form.button("§c§l关闭");
+        form.button("§0§l切换排序方式");
+        form.button(owner == null ? "§0§l按主人筛选" : "§0§l查看所有领地");
+        form.button("§0§l关闭");
 
         final List<ClaimedResidence> finalResidences = residences;
         final int sortBtnIndex = finalResidences.size();

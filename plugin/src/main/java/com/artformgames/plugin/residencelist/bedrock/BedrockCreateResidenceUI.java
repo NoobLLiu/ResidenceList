@@ -97,14 +97,14 @@ public class BedrockCreateResidenceUI {
 
         // 按钮（顺序固定，索引计算简单）
         // 0: 开/关自动选区模式（点击后直接关闭表单，让玩家走动操作）
-        form.button(autoEnabled ? "§c§l关闭自动选区模式" : "§a§l开启自动选区模式");
+        form.button(autoEnabled ? "§0§l关闭自动选区模式" : "§0§l开启自动选区模式");
         // 1: 返回上级菜单（退出自动圈地模式，返回主菜单）
-        form.button("§e§l返回上级菜单");
+        form.button("§0§l返回上级菜单");
         // 2: 关闭表单并开始圈地（保持自动圈地模式，关闭表单让玩家走动）
-        form.button("§d§l关闭表单并开始圈地");
+        form.button("§0§l关闭表单并开始圈地");
         // 3: 确认选区（进入第二步）
         if (hasSelection) {
-            form.button("§a§l确认选区");
+            form.button("§0§l确认选区");
         }
 
         final boolean finalHasSelection = hasSelection;
