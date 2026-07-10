@@ -15,7 +15,9 @@ import com.artformgames.plugin.residencelist.api.residence.ResidenceRate;
 import com.artformgames.plugin.residencelist.api.user.UserListData;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
+import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import com.artformgames.plugin.residencelist.utils.GUIUtils;
+import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -63,6 +65,8 @@ public class ResidenceManageUI extends AutoPagedGUI {
         loadIcon();
         loadStatus();
         loadRates();
+        loadPermissions();
+        loadAdvanced();
     }
 
     public @NotNull Player getViewer() {
@@ -162,6 +166,183 @@ public class ResidenceManageUI extends AutoPagedGUI {
         }
     }
 
+    public void loadPermissions() {
+        ClaimedResidence residence = getResidenceData().getResidence();
+
+        setItem(12, new GUIItem(CONFIG.ITEMS.PERMISSIONS.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                PermissionChoiceGUI.open(clicker, residence, ResidenceManageUI.this);
+            }
+        });
+    }
+
+    public static class PermissionChoiceGUI extends GUI {
+
+        public static void open(@NotNull Player player, @NotNull ClaimedResidence residence, @Nullable GUI previousGUI) {
+            new PermissionChoiceGUI(player, residence, previousGUI).openGUI(player);
+        }
+
+        protected final @NotNull Player viewer;
+        protected final @NotNull ClaimedResidence residence;
+        protected final @Nullable GUI previousGUI;
+
+        public PermissionChoiceGUI(@NotNull Player viewer, @NotNull ClaimedResidence residence, @Nullable GUI previousGUI) {
+            super(GUIType.THREE_BY_NINE, CONFIG.PERMISSIONS_TITLE.parseLine(viewer));
+            this.viewer = viewer;
+            this.residence = residence;
+            this.previousGUI = previousGUI;
+
+            setEmptyItem(PluginConfig.ICON.EMPTY.get(viewer));
+
+            if (previousGUI != null) {
+                setItem(0, new GUIItem(CONFIG.ITEMS.BACK.get(viewer)) {
+                    @Override
+                    public void onClick(Player player, ClickType clickType) {
+                        PluginConfig.GUI.CLICK_SOUND.playTo(player);
+                        previousGUI.openGUI(player);
+                    }
+                });
+            }
+
+            setItem(11, new GUIItem(CONFIG.ITEMS.GLOBAL_PERMISSIONS.get(viewer)) {
+                @Override
+                public void onClick(Player clicker, ClickType type) {
+                    if (!type.isLeftClick()) return;
+                    PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                    ResidenceFlagUI.open(clicker, residence, PermissionChoiceGUI.this);
+                }
+            });
+
+            setItem(15, new GUIItem(CONFIG.ITEMS.PLAYER_PERMISSIONS.get(viewer)) {
+                @Override
+                public void onClick(Player clicker, ClickType type) {
+                    if (!type.isLeftClick()) return;
+                    PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                    ResidencePlayerPermUI.open(clicker, residence, PermissionChoiceGUI.this);
+                }
+            });
+        }
+    }
+
+    public void loadAdvanced() {
+        ClaimedResidence residence = getResidenceData().getResidence();
+
+        setItem(21, new GUIItem(CONFIG.ITEMS.RENAME.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                clicker.closeInventory();
+                AnvilNameInput.open(clicker, "输入新领地名称", residence.getName(), (p, text) -> {
+                    if (text == null || text.trim().isEmpty()) {
+                        open(p, getResidenceData(), previousGUI);
+                        return;
+                    }
+                    if (!ResidenceUtils.canManage(p, residence)) {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        open(p, getResidenceData(), previousGUI);
+                        return;
+                    }
+                    boolean success = ResidenceUtils.renameResidence(p, residence, text.trim());
+                    if (success) {
+                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
+                        open(p, ResidenceListAPI.getResidenceData(residence), previousGUI);
+                    } else {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        open(p, getResidenceData(), previousGUI);
+                    }
+                });
+            }
+        });
+
+        setItem(22, new GUIItem(CONFIG.ITEMS.RESET_PERMISSIONS.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isShiftClick() || !type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                if (!ResidenceUtils.canManage(clicker, residence)) {
+                    PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                    return;
+                }
+                ResidenceUtils.resetPermissions(residence);
+                PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
+                open(clicker, getResidenceData(), previousGUI);
+            }
+        });
+
+        setItem(23, new GUIItem(CONFIG.ITEMS.MIRROR_PERMISSIONS.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                clicker.closeInventory();
+                AnvilNameInput.open(clicker, "输入源领地名称", "源领地名称", (p, text) -> {
+                    if (text == null || text.trim().isEmpty()) {
+                        open(p, getResidenceData(), previousGUI);
+                        return;
+                    }
+                    ClaimedResidence source = ResidenceListAPI.getResidence(text.trim());
+                    if (source == null) {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        open(p, getResidenceData(), previousGUI);
+                        return;
+                    }
+                    if (!ResidenceUtils.canManage(p, residence) || !source.isOwner(p)) {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        open(p, getResidenceData(), previousGUI);
+                        return;
+                    }
+                    ResidenceUtils.mirrorPermissions(p, residence, source);
+                    PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
+                    open(p, getResidenceData(), previousGUI);
+                });
+            }
+        });
+
+        setItem(24, new GUIItem(CONFIG.ITEMS.ENTER_MESSAGE.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                clicker.closeInventory();
+                String current = ResidenceUtils.getEnterMessage(residence);
+                AnvilNameInput.open(clicker, "设置进入提示", current != null ? current : "", (p, text) -> {
+                    if (!ResidenceUtils.canManage(p, residence)) {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        open(p, getResidenceData(), previousGUI);
+                        return;
+                    }
+                    ResidenceUtils.setEnterMessage(residence, text != null && !text.trim().isEmpty() ? text : null);
+                    PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
+                    open(p, getResidenceData(), previousGUI);
+                });
+            }
+        });
+
+        setItem(25, new GUIItem(CONFIG.ITEMS.LEAVE_MESSAGE.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                clicker.closeInventory();
+                String current = ResidenceUtils.getLeaveMessage(residence);
+                AnvilNameInput.open(clicker, "设置离开提示", current != null ? current : "", (p, text) -> {
+                    if (!ResidenceUtils.canManage(p, residence)) {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        open(p, getResidenceData(), previousGUI);
+                        return;
+                    }
+                    ResidenceUtils.setLeaveMessage(residence, text != null && !text.trim().isEmpty() ? text : null);
+                    PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
+                    open(p, getResidenceData(), previousGUI);
+                });
+            }
+        });
+    }
+
     public void loadRates() {
         if (getResidenceData().getRates().isEmpty()) {
             setItem(40, new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
@@ -245,6 +426,10 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 .defaults("&a&l详细信息 &7#&f%(name)")
                 .params("name").build();
 
+        ConfiguredMessage<String> PERMISSIONS_TITLE = ConfiguredMessage.asString()
+                .defaults("&e&l权限管理")
+                .build();
+
         interface ITEMS extends Configuration {
 
             ConfiguredItem BACK = ConfiguredItem.create()
@@ -300,6 +485,89 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     .defaultName("&7无评论")
                     .defaultLore(
                             "&7目前暂无评论"
+                    ).build();
+
+            ConfiguredItem PERMISSIONS = ConfiguredItem.create()
+                    .defaultType(Material.BOOK)
+                    .defaultName("&e&l权限管理")
+                    .defaultLore(
+                            "&7",
+                            "&7管理领地的全局权限与玩家权限",
+                            "&7",
+                            "&e▶ 左键点击 &8| &f打开权限管理菜单"
+                    ).build();
+
+            ConfiguredItem GLOBAL_PERMISSIONS = ConfiguredItem.create()
+                    .defaultType(Material.BOOK)
+                    .defaultName("&e&l全局权限")
+                    .defaultLore(
+                            "&7",
+                            "&7管理领地的全局权限设置",
+                            "&7会影响到所有未单独设置权限的玩家",
+                            "&7",
+                            "&e▶ 左键点击 &8| &f打开全局权限编辑"
+                    ).build();
+
+            ConfiguredItem PLAYER_PERMISSIONS = ConfiguredItem.create()
+                    .defaultType(Material.WRITABLE_BOOK)
+                    .defaultName("&e&l玩家权限")
+                    .defaultLore(
+                            "&7",
+                            "&7管理指定玩家的领地权限",
+                            "&7可添加、移除信任玩家及其权限",
+                            "&7",
+                            "&e▶ 左键点击 &8| &f打开玩家权限编辑"
+                    ).build();
+
+            ConfiguredItem RENAME = ConfiguredItem.create()
+                    .defaultType(Material.NAME_TAG)
+                    .defaultName("&e&l重命名领地")
+                    .defaultLore(
+                            "&7",
+                            "&7修改领地的实际名称",
+                            "&7",
+                            "&e▶ 左键点击 &8| &f输入新名称"
+                    ).build();
+
+            ConfiguredItem RESET_PERMISSIONS = ConfiguredItem.create()
+                    .defaultType(Material.TNT)
+                    .defaultName("&c&l重置权限")
+                    .defaultLore(
+                            "&7",
+                            "&7将所有权限恢复为默认值",
+                            "&c▶ Shift+左键 &8| &f确认重置"
+                    ).build();
+
+            ConfiguredItem MIRROR_PERMISSIONS = ConfiguredItem.create()
+                    .defaultType(Material.HOPPER)
+                    .defaultName("&e&l镜像权限")
+                    .defaultLore(
+                            "&7",
+                            "&7从另一块领地复制权限设置到当前领地",
+                            "&7",
+                            "&e▶ 左键点击 &8| &f输入源领地名称"
+                    ).build();
+
+            ConfiguredItem ENTER_MESSAGE = ConfiguredItem.create()
+                    .defaultType(Material.OAK_SIGN)
+                    .defaultName("&e&l进入提示")
+                    .defaultLore(
+                            "&7",
+                            "&7设置玩家进入领地时显示的提示",
+                            "&7留空即可清除当前提示",
+                            "&7",
+                            "&e▶ 左键点击 &8| &f编辑进入提示"
+                    ).build();
+
+            ConfiguredItem LEAVE_MESSAGE = ConfiguredItem.create()
+                    .defaultType(Material.BIRCH_SIGN)
+                    .defaultName("&e&l离开提示")
+                    .defaultLore(
+                            "&7",
+                            "&7设置玩家离开领地时显示的提示",
+                            "&7留空即可清除当前提示",
+                            "&7",
+                            "&e▶ 左键点击 &8| &f编辑离开提示"
                     ).build();
 
         }
