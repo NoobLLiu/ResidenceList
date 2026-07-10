@@ -46,7 +46,7 @@ public class BedrockResidenceManageUI {
         String name = BedrockFormUtil.stripColor(residenceData.getDisplayName());
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§a§l【领地系统-管理领地】" + name);
+                .title("§a【领地系统-管理领地】" + name);
 
         StringBuilder content = new StringBuilder();
         content.append("§f━━━━━━━━━━━━━━━\n");
@@ -73,14 +73,14 @@ public class BedrockResidenceManageUI {
         form.content(content.toString());
 
         // 功能按钮
-        form.button("§0§l编辑昵称");
-        form.button("§0§l编辑描述");
-        form.button("§0§l编辑图标");
-        form.button(residenceData.isPublicDisplayed() ? "§0§l切换为私有" : "§0§l切换为公开");
-        form.button("§0§l传送到领地");
-        form.button("§0§l设置传送点");
-        form.button("§0§l管理评价 §f(" + residenceData.getRates().size() + ")");
-        form.button("§0§l返回领地列表");
+        form.button("§0编辑昵称");
+        form.button("§0编辑描述");
+        form.button("§0编辑图标");
+        form.button(residenceData.isPublicDisplayed() ? "§0切换为私有" : "§0切换为公开");
+        form.button("§0传送到领地");
+        form.button("§0设置传送点");
+        form.button("§0管理评价 §f(" + residenceData.getRates().size() + ")");
+        form.button("§0返回领地列表");
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -111,6 +111,9 @@ public class BedrockResidenceManageUI {
             });
         });
 
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                BedrockResidenceListUI.openList(player, ownerFilter)));
+
         BedrockFormUtil.sendForm(player, form);
     }
 
@@ -119,7 +122,7 @@ public class BedrockResidenceManageUI {
      */
     private static void sendEditNameForm(Player player, ResidenceData residenceData, String ownerFilter) {
         CustomForm.Builder form = CustomForm.builder()
-                .title("§e§l【领地系统-编辑昵称】");
+                .title("§e【领地系统-编辑昵称】");
 
         form.label("§f为领地 §e" + BedrockFormUtil.stripColor(residenceData.getDisplayName()) + " §f设置别名");
         form.label("§f别名长度不能超过 16 个字符");
@@ -158,7 +161,7 @@ public class BedrockResidenceManageUI {
      */
     private static void sendEditDescriptionForm(Player player, ResidenceData residenceData, String ownerFilter) {
         CustomForm.Builder form = CustomForm.builder()
-                .title("§e§l【领地系统-编辑描述】");
+                .title("§e【领地系统-编辑描述】");
 
         form.label("§f为领地 §e" + BedrockFormUtil.stripColor(residenceData.getDisplayName()) + " §f编辑描述");
         form.label("§f你可以使用 \\n 进行换行");
@@ -191,7 +194,7 @@ public class BedrockResidenceManageUI {
      */
     private static void sendEditIconForm(Player player, ResidenceData residenceData, String ownerFilter) {
         CustomForm.Builder form = CustomForm.builder()
-                .title("§e§l【领地系统-编辑图标】");
+                .title("§e【领地系统-编辑图标】");
 
         form.label("§f为领地 §e" + BedrockFormUtil.stripColor(residenceData.getDisplayName()) + " §f选择图标");
 
@@ -279,19 +282,22 @@ public class BedrockResidenceManageUI {
 
         if (residenceData.getRates().isEmpty()) {
             SimpleForm.Builder form = SimpleForm.builder()
-                    .title("§e§l【领地系统-管理评价】")
+                    .title("§e【领地系统-管理评价】")
                     .content("§f目前暂无评价。")
-                    .button("§0§l返回");
+                    .button("§0返回");
 
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendManageMenu(player, residenceData, ownerFilter)));
+
+            form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                    sendManageMenu(player, residenceData, ownerFilter)));
 
             BedrockFormUtil.sendForm(player, form);
             return;
         }
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-管理评价】§f(" + residenceData.getRates().size() + ")");
+                .title("§e【领地系统-管理评价】§f(" + residenceData.getRates().size() + ")");
 
         StringBuilder content = new StringBuilder();
         content.append("§f点击评价可").append(allowDelete ? "§c删除评价" : "§e查看详情").append("\n\n");
@@ -312,7 +318,7 @@ public class BedrockResidenceManageUI {
             if (allowDelete) btnText += " §c[点击删除]";
             form.button(btnText);
         }
-        form.button("§0§l返回");
+        form.button("§0返回");
 
         final boolean finalAllowDelete = allowDelete;
         form.validResultHandler(response -> {
@@ -335,6 +341,9 @@ public class BedrockResidenceManageUI {
             });
         });
 
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                sendManageMenu(player, residenceData, ownerFilter)));
+
         BedrockFormUtil.sendForm(player, form);
     }
 
@@ -346,12 +355,12 @@ public class BedrockResidenceManageUI {
         String author = rate.getAuthorName() != null ? rate.getAuthorName() : "?";
 
         ModalForm.Builder form = ModalForm.builder()
-                .title("§c§l【领地系统-确认删除评价】")
+                .title("§c【领地系统-确认删除评价】")
                 .content("§f确定要删除 §e" + author + " §f的评价吗?\n\n"
                         + (rate.recommend() ? "§a赞 " : "§c踩 ")
                         + "§f" + BedrockFormUtil.stripColor(rate.content()))
-                .button1("§0§l确认删除")
-                .button2("§0§l取消");
+                .button1("§0确认删除")
+                .button2("§0取消");
 
         form.validResultHandler(response -> {
             BedrockFormUtil.runSync(() -> {
@@ -362,6 +371,9 @@ public class BedrockResidenceManageUI {
                 sendManageRatesForm(player, residenceData, ownerFilter);
             });
         });
+
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                sendManageRatesForm(player, residenceData, ownerFilter)));
 
         BedrockFormUtil.sendForm(player, form);
     }

@@ -47,7 +47,7 @@ public class BedrockResidenceInfoUI {
         String name = BedrockFormUtil.stripColor(residenceData.getDisplayName());
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§a§l【领地系统-详细信息】");
+                .title("§a【领地系统-详细信息】");
 
         StringBuilder content = new StringBuilder();
         content.append("§f━━━━━━━━━━━━━━━\n");
@@ -77,12 +77,12 @@ public class BedrockResidenceInfoUI {
 
         // 功能按钮
         if (tpLoc != null && residenceData.canTeleport(player)) {
-            form.button("§0§l传送到领地");
+            form.button("§0传送到领地");
         }
-        form.button("§0§l评分评价");
-        form.button("§0§l查看所有评价 §f(" + residenceData.getRates().size() + ")");
-        form.button("§0§l查看成员列表");
-        form.button("§0§l返回领地列表");
+        form.button("§0评分评价");
+        form.button("§0查看所有评价 §f(" + residenceData.getRates().size() + ")");
+        form.button("§0查看成员列表");
+        form.button("§0返回领地列表");
 
         final boolean hasTeleport = tpLoc != null && residenceData.canTeleport(player);
         final int btnRate = hasTeleport ? 1 : 0;
@@ -110,6 +110,9 @@ public class BedrockResidenceInfoUI {
             });
         });
 
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                BedrockResidenceListUI.openList(player, ownerFilter)));
+
         BedrockFormUtil.sendForm(player, form);
     }
 
@@ -120,7 +123,7 @@ public class BedrockResidenceInfoUI {
         ResidenceRate existing = residenceData.getRates().get(player.getUniqueId());
 
         CustomForm.Builder form = CustomForm.builder()
-                .title("§e§l【领地系统-评分评价】");
+                .title("§e【领地系统-评分评价】");
 
         form.label("§e请对该领地进行评价:");
 
@@ -172,7 +175,7 @@ public class BedrockResidenceInfoUI {
      */
     private static void sendRatesList(Player player, ResidenceData residenceData, String ownerFilter) {
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-评价列表】(" + residenceData.getRates().size() + ")");
+                .title("§e【领地系统-评价列表】(" + residenceData.getRates().size() + ")");
 
         StringBuilder content = new StringBuilder();
         if (residenceData.getRates().isEmpty()) {
@@ -190,10 +193,13 @@ public class BedrockResidenceInfoUI {
             }
         }
         form.content(content.toString());
-        form.button("§0§l返回");
+        form.button("§0返回");
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() -> sendMainMenu(player, residenceData, ownerFilter)));
+
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                sendMainMenu(player, residenceData, ownerFilter)));
 
         BedrockFormUtil.sendForm(player, form);
     }
@@ -204,15 +210,15 @@ public class BedrockResidenceInfoUI {
     private static void sendMembersList(Player player, ResidenceData residenceData, String ownerFilter) {
         ClaimedResidence residence = residenceData.getResidence();
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-成员列表】(" + (residence.getTrustedPlayers().size() + 1) + ")");
+                .title("§e【领地系统-成员列表】(" + (residence.getTrustedPlayers().size() + 1) + ")");
 
         StringBuilder content = new StringBuilder();
 
         // 领地主人
         if (!ResidenceUtils.isServerLand(residence)) {
-            content.append("§a§l[主人] §f").append(residenceData.getOwner()).append("\n");
+            content.append("§a[主人] §f").append(residenceData.getOwner()).append("\n");
         } else {
-            content.append("§e§l[服务器领地]\n");
+            content.append("§e[服务器领地]\n");
         }
 
         // 信任成员
@@ -221,10 +227,13 @@ public class BedrockResidenceInfoUI {
         }
 
         form.content(content.toString());
-        form.button("§0§l返回");
+        form.button("§0返回");
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() -> sendMainMenu(player, residenceData, ownerFilter)));
+
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                sendMainMenu(player, residenceData, ownerFilter)));
 
         BedrockFormUtil.sendForm(player, form);
     }

@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * 基岩版领地系统主菜单及领地列表界面（SimpleForm）。
  * <p>
- * 按钮配色规则：第一行 §0§l（加粗黑色），第二行 §1（正常深蓝色）。
+ * 按钮配色规则：第一行 §0（加粗黑色），第二行 §1（正常深蓝色）。
  */
 public class BedrockResidenceListUI {
 
@@ -58,15 +58,15 @@ public class BedrockResidenceListUI {
 
     private static void sendMainMenu(Player player) {
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§a§l【领地系统-主菜单】");
+                .title("§a【领地系统-主菜单】");
 
         form.content("§f请选择您需要的功能:");
 
-        form.button("§0§l个人领地传送");
-        form.button("§0§l个人领地列表");
-        form.button("§0§l公开领地列表");
-        form.button("§0§l创建个人领地");
-        form.button("§0§l关闭");
+        form.button("§0个人领地传送");
+        form.button("§0个人领地列表");
+        form.button("§0公开领地列表");
+        form.button("§0创建个人领地");
+        form.button("§0关闭");
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -102,9 +102,9 @@ public class BedrockResidenceListUI {
 
         if (residences.isEmpty()) {
             SimpleForm.Builder form = SimpleForm.builder()
-                    .title("§d§l【领地系统-个人领地传送】")
+                    .title("§d【领地系统-个人领地传送】")
                     .content("§f当前没有可传送的领地。")
-                    .button("§0§l返回主菜单");
+                    .button("§0返回主菜单");
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendMainMenu(player)));
             BedrockFormUtil.sendForm(player, form);
@@ -112,17 +112,17 @@ public class BedrockResidenceListUI {
         }
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§d§l【领地系统-个人领地传送】");
+                .title("§d【领地系统-个人领地传送】");
 
         form.content("§f点击领地即可传送:");
 
         for (ClaimedResidence res : residences) {
             ResidenceData resData = Main.getInstance().getResidenceManager().getResidence(res);
             String name = BedrockFormUtil.stripColor(resData.getDisplayName());
-            form.button("§0§l" + name + "\n§1" + resData.getOwner());
+            form.button("§0" + name + "\n§1" + resData.getOwner());
         }
 
-        form.button("§0§l返回主菜单");
+        form.button("§0返回主菜单");
 
         final List<ClaimedResidence> finalResidences = residences;
         final int backBtnIndex = residences.size();
@@ -141,6 +141,7 @@ public class BedrockResidenceListUI {
             });
         });
 
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() -> sendMainMenu(player)));
         BedrockFormUtil.sendForm(player, form);
     }
 
@@ -182,7 +183,7 @@ public class BedrockResidenceListUI {
         List<ClaimedResidence> pageItems = residences.subList(fromIndex, toIndex);
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-" + titleName + "】§f(第" + page + "页/共" + totalPages + "页)");
+                .title("§e【领地系统-" + titleName + "】§f(第" + page + "页/共" + totalPages + "页)");
 
         StringBuilder content = new StringBuilder();
         if (owner != null) {
@@ -203,10 +204,10 @@ public class BedrockResidenceListUI {
             int dislikes = resData.countRate(r -> !r.recommend());
             StringBuilder btnText = new StringBuilder();
             if (data.isPinned(res.getName())) btnText.append("§e★ ");
-            btnText.append("§0§l").append(name);
+            btnText.append("§0").append(name);
             // 第二行精简：去掉"主人:"，去掉竖线前后空格
             btnText.append("\n§1").append(resData.getOwner());
-            btnText.append("|赞").append(likes).append("|踩").append(dislikes);
+            btnText.append("|§a赞").append(likes).append("|§c踩").append(dislikes);
 
             if (!resData.getDescription().isEmpty()) {
                 String desc = BedrockFormUtil.stripColor(String.join(" ", resData.getDescription()));
@@ -223,22 +224,22 @@ public class BedrockResidenceListUI {
         int btnIndex = pageItems.size();
 
         if (page > 1) {
-            form.button("§0§l上一页 §f(第" + (page - 1) + "页)");
+            form.button("§0上一页 §f(第" + (page - 1) + "页)");
             btnIndices[0] = btnIndex++;
         } else {
             btnIndices[0] = -1;
         }
 
         if (page < totalPages) {
-            form.button("§0§l下一页 §f(第" + (page + 1) + "页)");
+            form.button("§0下一页 §f(第" + (page + 1) + "页)");
             btnIndices[1] = btnIndex++;
         } else {
             btnIndices[1] = -1;
         }
 
-        form.button("§0§l切换排序方式");
+        form.button("§0切换排序方式");
         btnIndices[2] = btnIndex++;
-        form.button("§0§l返回主菜单");
+        form.button("§0返回主菜单");
         btnIndices[3] = btnIndex;
 
         final int currentPage = page;
@@ -270,6 +271,7 @@ public class BedrockResidenceListUI {
             });
         });
 
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() -> sendMainMenu(player)));
         BedrockFormUtil.sendForm(player, form);
     }
 
@@ -281,7 +283,7 @@ public class BedrockResidenceListUI {
         String name = BedrockFormUtil.stripColor(resData.getDisplayName());
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§a§l【领地系统-" + name + "】");
+                .title("§a【领地系统-" + name + "】");
 
         StringBuilder content = new StringBuilder();
         content.append("§f━━━━━━━━━━━━━━━\n");
@@ -298,16 +300,16 @@ public class BedrockResidenceListUI {
 
         form.content(content.toString());
 
-        form.button("§0§l查看详细信息");
+        form.button("§0查看详细信息");
         if (resData.canTeleport(player)) {
-            form.button("§0§l传送到领地");
+            form.button("§0传送到领地");
         }
         if (data.isPinned(residence.getName())) {
-            form.button("§0§l取消置顶");
+            form.button("§0取消置顶");
         } else {
-            form.button("§0§l置顶领地");
+            form.button("§0置顶领地");
         }
-        form.button("§0§l返回列表");
+        form.button("§0返回列表");
 
         final boolean canTeleport = resData.canTeleport(player);
         final boolean isPinned = data.isPinned(residence.getName());
@@ -347,6 +349,7 @@ public class BedrockResidenceListUI {
             });
         });
 
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() -> openList(player, owner)));
         BedrockFormUtil.sendForm(player, form);
     }
 
@@ -355,10 +358,10 @@ public class BedrockResidenceListUI {
         String titleName = isPersonal ? "个人领地列表" : "公开领地列表";
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e§l【领地系统-" + titleName + "】")
+                .title("§e【领地系统-" + titleName + "】")
                 .content("§f目前没有可显示的领地。")
-                .button("§0§l返回主菜单")
-                .button("§0§l关闭");
+                .button("§0返回主菜单")
+                .button("§0关闭");
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -369,6 +372,7 @@ public class BedrockResidenceListUI {
             });
         });
 
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() -> sendMainMenu(player)));
         BedrockFormUtil.sendForm(player, form);
     }
 }

@@ -44,17 +44,17 @@ public class BedrockCreateResidenceUI {
         String toolName = getSelectionToolName();
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§a§l【领地系统-创建领地】");
+                .title("§a【领地系统-创建领地】");
 
         StringBuilder content = new StringBuilder();
 
         // 第一步说明
-        content.append("§e§l第一步 | 选取圈地范围\n");
+        content.append("§e第一步 | 选取圈地范围\n");
         content.append("§f使用领地选取工具 §e").append(toolName).append(" §f选取两个对角点\n");
         content.append("§f自动圈地模式: ").append(autoEnabled ? "§a已开启" : "§c已关闭").append("\n");
 
         // 第二步：选区信息
-        content.append("\n§e§l第二步 | 选区信息\n");
+        content.append("\n§e第二步 | 选区信息\n");
         if (hasSelection) {
             CuboidArea area = Residence.getInstance().getSelectionManager().getSelectionCuboid(player);
             if (area != null) {
@@ -97,14 +97,14 @@ public class BedrockCreateResidenceUI {
 
         // 按钮（顺序固定，索引计算简单）
         // 0: 开/关自动选区模式（点击后直接关闭表单，让玩家走动操作）
-        form.button(autoEnabled ? "§0§l关闭自动选区模式" : "§0§l开启自动选区模式");
+        form.button(autoEnabled ? "§0关闭自动选区模式" : "§0开启自动选区模式");
         // 1: 返回上级菜单（退出自动圈地模式，返回主菜单）
-        form.button("§0§l返回上级菜单");
+        form.button("§0返回上级菜单");
         // 2: 关闭表单并开始圈地（保持自动圈地模式，关闭表单让玩家走动）
-        form.button("§0§l关闭表单并开始圈地");
+        form.button("§0关闭表单并开始圈地");
         // 3: 确认选区（进入第二步）
         if (hasSelection) {
-            form.button("§0§l确认选区");
+            form.button("§0确认选区");
         }
 
         final boolean finalHasSelection = hasSelection;
@@ -147,7 +147,7 @@ public class BedrockCreateResidenceUI {
                 .getList().containsKey(player.getUniqueId());
 
         CustomForm.Builder form = CustomForm.builder()
-                .title("§a§l【领地系统-创建领地-确认选区】");
+                .title("§a【领地系统-创建领地-确认选区】");
 
         // 选区信息
         if (hasSelection) {
@@ -189,7 +189,7 @@ public class BedrockCreateResidenceUI {
         form.label("§f自动圈地模式: " + (autoEnabled ? "§a已开启" : "§c已关闭"));
 
         // 输入框
-        form.label("§e§l请输入领地名称");
+        form.label("§e请输入领地名称");
         form.label("§f支持英文、数字、下划线");
         form.input("领地名称", "请输入领地名称...", "");
 

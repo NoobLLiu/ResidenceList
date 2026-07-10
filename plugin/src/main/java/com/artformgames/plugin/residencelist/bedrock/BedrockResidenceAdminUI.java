@@ -44,9 +44,9 @@ public class BedrockResidenceAdminUI {
         List<ClaimedResidence> residences = collectResidences(player, data, owner);
         if (residences.isEmpty()) {
             SimpleForm.Builder form = SimpleForm.builder()
-                    .title("§a§l【领地系统-管理员领地列表】")
+                    .title("§a【领地系统-管理员领地列表】")
                     .content("§f目前没有领地。")
-                    .button("§0§l关闭");
+                    .button("§0关闭");
             BedrockFormUtil.sendForm(player, form);
             return;
         }
@@ -64,7 +64,7 @@ public class BedrockResidenceAdminUI {
 
     private static void sendAdminListForm(Player player, UserListData data, String owner, List<ClaimedResidence> residences) {
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§a§l【领地系统-管理员领地列表】(" + residences.size() + ")");
+                .title("§a【领地系统-管理员领地列表】(" + residences.size() + ")");
 
         StringBuilder content = new StringBuilder();
         if (owner != null) {
@@ -86,15 +86,15 @@ public class BedrockResidenceAdminUI {
             btnText.append("\n§f主人: §f").append(resData.getOwner());
             btnText.append(" §f| 状态: ").append(resData.isPublicDisplayed() ? "§a公开" : "§c私有");
             btnText.append("\n§f规模: §f").append(res.getMainArea().getSize());
-            btnText.append(" §f| 赞: §a").append(likes).append(" §f踩: §c").append(dislikes);
+            btnText.append(" §f| §a赞: ").append(likes).append(" §f| §c踩: ").append(dislikes);
 
             form.button(btnText.toString());
         }
 
         // 功能按钮
-        form.button("§0§l切换排序方式");
-        form.button(owner == null ? "§0§l按主人筛选" : "§0§l查看所有领地");
-        form.button("§0§l关闭");
+        form.button("§0切换排序方式");
+        form.button(owner == null ? "§0按主人筛选" : "§0查看所有领地");
+        form.button("§0关闭");
 
         final List<ClaimedResidence> finalResidences = residences;
         final int sortBtnIndex = finalResidences.size();
