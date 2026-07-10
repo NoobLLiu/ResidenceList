@@ -138,8 +138,8 @@ public class BedrockResidenceInfoUI {
         }
 
         form.validResultHandler(response -> {
-            int rateType = response.asDropdown(0);
-            String comment = response.asInput(1);
+            int rateType = response.asDropdown();
+            String comment = response.next();
 
             BedrockFormUtil.runSync(() -> {
                 boolean recommend = (rateType == 0);

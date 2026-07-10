@@ -127,7 +127,7 @@ public class BedrockResidenceManageUI {
                 residenceData.getAliasName() != null ? residenceData.getAliasName() : "");
 
         form.validResultHandler(response -> {
-            String newName = response.asInput(0);
+            String newName = response.next();
             BedrockFormUtil.runSync(() -> {
                 if (newName == null || newName.isBlank()) {
                     PluginMessages.EDIT.FAILED_SOUND.playTo(player);
@@ -166,7 +166,7 @@ public class BedrockResidenceManageUI {
         form.input("领地描述", "输入描述内容...", currentDesc);
 
         form.validResultHandler(response -> {
-            String desc = response.asInput(0);
+            String desc = response.next();
             BedrockFormUtil.runSync(() -> {
                 if (desc == null || desc.isBlank()) {
                     residenceData.modify(d -> d.setDescription(List.of()));
@@ -217,7 +217,7 @@ public class BedrockResidenceManageUI {
         form.dropdown("选择图标材质", defaultIndex, iconOptions);
 
         form.validResultHandler(response -> {
-            int selectedIndex = response.asDropdown(0);
+            int selectedIndex = response.asDropdown();
             String selectedIcon = iconOptions[selectedIndex];
             Material material = mapIconNameToMaterial(selectedIcon);
 
