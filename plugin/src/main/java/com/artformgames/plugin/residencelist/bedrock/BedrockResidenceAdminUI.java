@@ -44,8 +44,8 @@ public class BedrockResidenceAdminUI {
         List<ClaimedResidence> residences = collectResidences(player, data, owner);
         if (residences.isEmpty()) {
             SimpleForm.Builder form = SimpleForm.builder()
-                    .title("§a§l管理员领地列表")
-                    .content("§7目前没有领地。")
+                    .title("§a§l【领地系统-管理员领地列表】")
+                    .content("§f目前没有领地。")
                     .button("§c§l关闭");
             BedrockFormUtil.sendForm(player, form);
             return;
@@ -64,13 +64,13 @@ public class BedrockResidenceAdminUI {
 
     private static void sendAdminListForm(Player player, UserListData data, String owner, List<ClaimedResidence> residences) {
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§a§l管理员领地列表 §7(" + residences.size() + ")");
+                .title("§a§l【领地系统-管理员领地列表】(" + residences.size() + ")");
 
         StringBuilder content = new StringBuilder();
         if (owner != null) {
-            content.append("§7正在查看 §f").append(owner).append(" §7的领地\n");
+            content.append("§f正在查看 §f").append(owner).append(" §f的领地\n");
         }
-        content.append("§7排序: §f").append(data.getSortFunction().name())
+        content.append("§f排序: §f").append(data.getSortFunction().name())
                 .append(data.isSortReversed() ? " §c(降序)" : " §a(升序)");
         form.content(content.toString());
 
@@ -83,10 +83,10 @@ public class BedrockResidenceAdminUI {
 
             StringBuilder btnText = new StringBuilder();
             btnText.append("§a").append(name);
-            btnText.append("\n§7主人: §f").append(resData.getOwner());
-            btnText.append(" §7| 状态: ").append(resData.isPublicDisplayed() ? "§a公开" : "§c私有");
-            btnText.append("\n§7规模: §f").append(res.getMainArea().getSize());
-            btnText.append(" §7| 赞: §a").append(likes).append(" §7踩: §c").append(dislikes);
+            btnText.append("\n§f主人: §f").append(resData.getOwner());
+            btnText.append(" §f| 状态: ").append(resData.isPublicDisplayed() ? "§a公开" : "§c私有");
+            btnText.append("\n§f规模: §f").append(res.getMainArea().getSize());
+            btnText.append(" §f| 赞: §a").append(likes).append(" §f踩: §c").append(dislikes);
 
             form.button(btnText.toString());
         }

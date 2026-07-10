@@ -53,7 +53,7 @@ public class OpenCommand extends SubCommand<UserCommands> {
             if (autoSelecting && owner == null) {
                 BedrockCreateResidenceUI.open(player, ownerName);
             } else {
-                BedrockResidenceListUI.open(player, ownerName);
+                BedrockResidenceListUI.open(player);
             }
             PluginConfig.GUI.OPEN_SOUND.playTo(player);
             return null;

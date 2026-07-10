@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
  * 基岩版创建领地界面。
  * <p>
  * 对应 Java 版 {@link com.artformgames.plugin.residencelist.ui.CreateResidenceUI}。
- * 基岩版无法使用铁砧输入，改为 CustomForm 的 Input 组件。
+ * 分为两步：第一步显示选区信息与操作按钮，第二步输入领地名称并确认创建。
  */
 public class BedrockCreateResidenceUI {
 
@@ -27,7 +27,7 @@ public class BedrockCreateResidenceUI {
     }
 
     /**
-     * 打开创建领地表单。
+     * 打开创建领地页面。
      *
      * @param player     目标玩家
      * @param ownerFilter 领地列表的筛选主人（用于返回）
@@ -36,36 +36,129 @@ public class BedrockCreateResidenceUI {
         sendCreateForm(player, ownerFilter);
     }
 
-    /**
-     * 创建领地表单，显示选区信息并输入名称。
-     */
+    // ======================== 第一步：创建领地主页面 ========================
+
     private static void sendCreateForm(Player player, String ownerFilter) {
         boolean hasSelection = Residence.getInstance().getSelectionManager().hasPlacedBoth(player);
         boolean autoEnabled = Residence.getInstance().getAutoSelectionManager()
                 .getList().containsKey(player.getUniqueId());
         String toolName = getSelectionToolName();
 
-        CustomForm.Builder form = CustomForm.builder()
-                .title("§a§l创建领地");
+        SimpleForm.Builder form = SimpleForm.builder()
+                .title("§a§l【领地系统-创建领地】");
 
-        // 第一步：选区状态
-        form.label("§e§l第一步 | 选取圈地范围");
-        form.label("§7使用领地选取工具 §f" + toolName + " §7选取两个对角点");
-        form.label(autoEnabled ? "§2[自动选取已开启]" : "§4[自动选取已关闭]");
+        StringBuilder content = new StringBuilder();
+
+        // 第一步说明
+        content.append("§e§l第一步 | 选取圈地范围\n");
+        content.append("§f使用领地选取工具 §e").append(toolName).append(" §f选取两个对角点\n");
+        content.append("§f自动圈地模式: ").append(autoEnabled ? "§a已开启" : "§c已关闭").append("\n");
 
         // 第二步：选区信息
+        content.append("\n§e§l第二步 | 选区信息\n");
         if (hasSelection) {
             CuboidArea area = Residence.getInstance().getSelectionManager().getSelectionCuboid(player);
             if (area != null) {
-                form.label("§e§l第二步 | 选区信息");
+                content.append("§f选区大小: §e").append(area.getXSize())
+                        .append("×").append(area.getYSize()).append("×").append(area.getZSize()).append("\n");
+                content.append("§f总面积: §e").append(area.getSize()).append(" 方块\n");
+                content.append("§f世界: §e").append(area.getWorldName()).append("\n");
+
+                Location low = area.getLowLocation();
+                Location high = area.getHighLocation();
+                if (low != null && high != null) {
+                    content.append("§f坐标: §e(").append(low.getBlockX()).append(",")
+                            .append(low.getBlockY()).append(",").append(low.getBlockZ())
+                            .append(") -> (").append(high.getBlockX()).append(",")
+                            .append(high.getBlockY()).append(",").append(high.getBlockZ()).append(")\n");
+                }
+
+                ResidencePlayer rPlayer = Residence.getInstance().getPlayerManager().getResidencePlayer(player);
+                PermissionGroup group = rPlayer.getGroup();
+                double cost = area.getCost(group);
+                boolean economyEnabled = Residence.getInstance().getConfigManager().enableEconomy();
+                boolean chargeOnCreation = Residence.getInstance().getConfigManager().isChargeOnCreation();
+
+                if (economyEnabled && chargeOnCreation && cost > 0) {
+                    String formatted = Residence.getInstance().getEconomyManager() != null
+                            ? Residence.getInstance().getEconomyManager().format(cost)
+                            : String.format("%.2f", cost);
+                    content.append("§f创建费用: §e").append(formatted).append("\n");
+                } else {
+                    content.append("§f创建费用: §a免费\n");
+                }
+                content.append("§f领地数量: §e").append(rPlayer.getResAmount())
+                        .append("§f/§e").append(rPlayer.getMaxRes()).append("\n");
+            }
+        } else {
+            content.append("§c请先选取区域后再创建领地\n");
+        }
+
+        form.content(content.toString());
+
+        // 按钮
+        form.button(autoEnabled ? "§c§l关闭自动选区模式" : "§a§l开启自动选区模式");
+        form.button("§e§l刷新选区信息");
+        if (hasSelection) {
+            form.button("§a§l确认选区");
+        }
+        form.button("§e§l返回主菜单");
+
+        final boolean finalHasSelection = hasSelection;
+        final int btnAuto = 0;
+        final int btnRefresh = 1;
+        final int btnConfirm = hasSelection ? 2 : -1;
+        final int btnBack = hasSelection ? 3 : 2;
+
+        form.validResultHandler(response -> {
+            int clicked = response.clickedButtonId();
+            BedrockFormUtil.runSync(() -> {
+                PluginConfig.GUI.CLICK_SOUND.playTo(player);
+                if (clicked == btnAuto) {
+                    Residence.getInstance().getAutoSelectionManager().switchAutoSelection(player);
+                    sendCreateForm(player, ownerFilter);
+                } else if (clicked == btnRefresh) {
+                    sendCreateForm(player, ownerFilter);
+                } else if (clicked == btnConfirm) {
+                    sendConfirmForm(player, ownerFilter);
+                } else if (clicked == btnBack) {
+                    disableAutoSelection(player);
+                    BedrockResidenceListUI.open(player);
+                }
+            });
+        });
+
+        // 玩家直接关闭表单时，自动关闭自动圈地模式
+        form.closedResultHandler(() -> BedrockFormUtil.runSync(() -> {
+            disableAutoSelection(player);
+            BedrockResidenceListUI.open(player);
+        }));
+
+        BedrockFormUtil.sendForm(player, form);
+    }
+
+    // ======================== 第二步：确认选区创建领地 ========================
+
+    private static void sendConfirmForm(Player player, String ownerFilter) {
+        boolean hasSelection = Residence.getInstance().getSelectionManager().hasPlacedBoth(player);
+        boolean autoEnabled = Residence.getInstance().getAutoSelectionManager()
+                .getList().containsKey(player.getUniqueId());
+
+        CustomForm.Builder form = CustomForm.builder()
+                .title("§a§l【领地系统-创建领地-确认选区】");
+
+        // 选区信息
+        if (hasSelection) {
+            CuboidArea area = Residence.getInstance().getSelectionManager().getSelectionCuboid(player);
+            if (area != null) {
                 form.label("§f选区大小: §e" + area.getXSize() + "×" + area.getYSize() + "×" + area.getZSize());
-                form.label("§f总面积: §e" + area.getSize() + " §7方块");
+                form.label("§f总面积: §e" + area.getSize() + " 方块");
                 form.label("§f世界: §e" + area.getWorldName());
 
                 Location low = area.getLowLocation();
                 Location high = area.getHighLocation();
                 if (low != null && high != null) {
-                    form.label("§f坐标: §7(" + low.getBlockX() + "," + low.getBlockY() + "," + low.getBlockZ()
+                    form.label("§f坐标: §e(" + low.getBlockX() + "," + low.getBlockY() + "," + low.getBlockZ()
                             + ") -> (" + high.getBlockX() + "," + high.getBlockY() + "," + high.getBlockZ() + ")");
                 }
 
@@ -83,19 +176,20 @@ public class BedrockCreateResidenceUI {
                 } else {
                     form.label("§f创建费用: §a免费");
                 }
-                form.label("§f领地数量: §e" + rPlayer.getResAmount() + "§7/" + rPlayer.getMaxRes());
+                form.label("§f领地数量: §e" + rPlayer.getResAmount() + "§f/§e" + rPlayer.getMaxRes());
             }
         } else {
-            form.label("§e§l第二步 | 选区信息 §8(无选区)");
-            form.label("§c请先选取区域后再创建领地");
+            form.label("§c当前没有选区，请先选取区域！");
+            form.label("§f请返回上一级菜单选取区域。");
         }
 
-        // 第三步：输入名称
-        if (hasSelection) {
-            form.label("§e§l第三步 | 输入领地名称");
-            form.input("领地名称", "输入领地名称...", "");
-            form.label("§c注意: 创建后可能扣除相应费用");
-        }
+        // 自动圈地模式状态
+        form.label("§f自动圈地模式: " + (autoEnabled ? "§a已开启" : "§c已关闭"));
+
+        // 输入框
+        form.label("§e§l请输入领地名称");
+        form.label("§f支持英文、数字、下划线");
+        form.input("领地名称", "请输入领地名称...", "");
 
         form.validResultHandler(response -> {
             if (!hasSelection) {
@@ -104,28 +198,35 @@ public class BedrockCreateResidenceUI {
                 return;
             }
 
-            // 最后一个组件是 input（index 需要计算 label 数量后的位置）
-            // 由于 label 不产生响应值，input 是唯一的响应组件
             String name = response.asInput(0);
             if (name == null || name.isBlank()) {
                 PluginMessages.CREATE.FAILED_SOUND.playTo(player);
-                sendCreateForm(player, ownerFilter);
+                BedrockFormUtil.runSync(() -> sendCreateForm(player, ownerFilter));
                 return;
             }
 
             BedrockFormUtil.runSync(() -> {
                 PluginMessages.CREATE.ASK_SOUND.playTo(player);
-                // 等效 /res create <name>
                 Bukkit.dispatchCommand(player, "res create " + name);
                 PluginMessages.CREATE.SUCCESS.sendTo(player, name);
-                BedrockResidenceListUI.open(player, ownerFilter);
+                BedrockResidenceListUI.open(player);
             });
         });
 
         form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
-                BedrockResidenceListUI.open(player, ownerFilter)));
+                sendCreateForm(player, ownerFilter)));
 
         BedrockFormUtil.sendForm(player, form);
+    }
+
+    /**
+     * 关闭自动圈地模式（如果已开启）。
+     */
+    private static void disableAutoSelection(Player player) {
+        if (Residence.getInstance().getAutoSelectionManager()
+                .getList().containsKey(player.getUniqueId())) {
+            Residence.getInstance().getAutoSelectionManager().switchAutoSelection(player);
+        }
     }
 
     /**
