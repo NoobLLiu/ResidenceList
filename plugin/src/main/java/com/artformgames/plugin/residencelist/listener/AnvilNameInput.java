@@ -62,6 +62,16 @@ public class AnvilNameInput implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (event.getView().getTopInventory().getType() != InventoryType.ANVIL) return;
+        if (!callbacks.containsKey(player.getUniqueId())) return;
+
+        int slot = event.getRawSlot();
+        if (slot >= 0 && slot <= 2) {
+            if (slot != 2) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+
         if (event.getSlot() != 2) return;
 
         ItemStack result = event.getCurrentItem();

@@ -138,7 +138,7 @@ public class BedrockPermissionUI {
 
         for (Flags flag : flags) {
             boolean current = residence.getPermissions().has(flag, flag.isEnabled());
-            form.toggle("§0" + flag.getName(), current);
+            form.toggle(flag.getName() + " - " + BedrockFormUtil.stripColor(flag.getDesc()), current);
         }
 
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
@@ -303,7 +303,7 @@ public class BedrockPermissionUI {
 
         for (Flags flag : flags) {
             boolean current = residence.getPermissions().playerHas(targetName, flag.getName(), flag.isEnabled());
-            form.toggle("§0" + flag.getName(), current);
+            form.toggle(flag.getName() + " - " + BedrockFormUtil.stripColor(flag.getDesc()), current);
         }
 
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
