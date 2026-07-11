@@ -358,9 +358,9 @@ public class BedrockPermissionUI {
             form.toggle(flag.getName() + " - " + BedrockFormUtil.stripColor(flag.getDesc()), current);
         }
 
-        // stepSlider is at index 0, label has no index, toggles start at index 1
+        // label=index 0, stepSlider=index 1, toggles start at index 2
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
-            int action = response.asStepSlider(0);
+            int action = response.asStepSlider(1);
             if (action == 2) {
                 // 不保存，直接返回
                 sendPlayerCategoryListForm(player, residenceData, targetUUIDs, ownerFilter);
@@ -369,7 +369,7 @@ public class BedrockPermissionUI {
             // Save: apply to all selected players
             for (int i = 0; i < flags.size(); i++) {
                 Flags flag = flags.get(i);
-                boolean value = response.asToggle(i + 1);
+                boolean value = response.asToggle(i + 2);
                 String stateStr = value ? "true" : "false";
                 for (UUID uuid : targetUUIDs) {
                     ResidenceUtils.setPlayerFlag(player, residence, uuid, flag.name(), stateStr);

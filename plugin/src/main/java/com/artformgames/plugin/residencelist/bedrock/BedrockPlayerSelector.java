@@ -82,14 +82,14 @@ public class BedrockPlayerSelector {
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
             for (int i = 0; i < pageCandidatesFinal.size(); i++) {
                 UUID uuid = pageCandidatesFinal.get(i);
-                if (response.asToggle(i)) {
+                if (response.asToggle(i + 1)) {
                     selected.add(uuid);
                 } else {
                     selected.remove(uuid);
                 }
             }
 
-            int action = response.asStepSlider(pageCandidatesFinal.size());
+            int action = response.asStepSlider(pageCandidatesFinal.size() + 1);
             switch (action) {
                 case 0 -> open(player, title, candidates, selected, currentPage, onDone, onBack);
                 case 1 -> open(player, title, candidates, selected, currentPage + 1, onDone, onBack);

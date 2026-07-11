@@ -305,7 +305,7 @@ public class BedrockResidenceListUI {
         // 按钮索引动态计算：传送按钮仅在 canTeleport 时存在，
         // 因此不能使用固定的 case 0/1/2/3，否则他人领地（3按钮）回调会错位。
         int btnIndex = 0;
-        form.button("§0查看详细信息", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0领地设置面板", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         final int btnView = btnIndex++;
         final int btnTeleport;
         if (resData.canTeleport(player)) {
