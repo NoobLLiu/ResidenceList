@@ -48,12 +48,17 @@ public class OpenCommand extends SubCommand<UserCommands> {
         boolean autoSelecting = Residence.getInstance().getAutoSelectionManager()
                 .getList().containsKey(player.getUniqueId());
 
+        // 未指定玩家且不在自动圈地模式时，默认打开个人领地列表
+        if (ownerName == null && !autoSelecting) {
+            ownerName = player.getName();
+        }
+
         // 基岩版玩家使用 Bedrock Forms 表单
         if (BedrockFormUtil.isBedrockPlayer(player)) {
             if (autoSelecting && owner == null) {
                 BedrockCreateResidenceUI.open(player, ownerName);
             } else {
-                BedrockResidenceListUI.open(player);
+                BedrockResidenceListUI.openList(player, ownerName);
             }
             PluginConfig.GUI.OPEN_SOUND.playTo(player);
             return null;

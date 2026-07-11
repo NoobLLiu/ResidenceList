@@ -134,9 +134,40 @@ public class ResidenceManageUI extends AutoPagedGUI {
                         openGUI(player);
                     }));
                 } else if (type.isLeftClick()) {
+                    // 设置领地昵称（别名）
+                    clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
+                    String currentAlias = getResidenceData().getAliasName() != null ? getResidenceData().getAliasName() : "";
+                    AnvilNameInput.open(clicker, "设置领地昵称", currentAlias, (player, text) -> {
+                        if (text == null || text.trim().isEmpty()) {
+                            open(player, getResidenceData(), previousGUI);
+                            return;
+                        }
+                        getResidenceData().modify(d -> d.setNickname(text.trim()));
+                        PluginMessages.EDIT.NAME_UPDATED.sendTo(player, getResidenceData().getDisplayName());
+                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                        open(player, getResidenceData(), previousGUI);
+                    });
                 } else if (type.isRightClick()) {
+                    // 设置领地描述
+                    clicker.closeInventory();
                     PluginMessages.EDIT.EDIT_SOUND.playTo(getViewer());
+                    String currentDesc = String.join("\\n", getResidenceData().getDescription());
+                    AnvilNameInput.open(clicker, "设置领地描述", currentDesc, (player, text) -> {
+                        if (text == null) {
+                            open(player, getResidenceData(), previousGUI);
+                            return;
+                        }
+                        if (text.trim().isEmpty()) {
+                            getResidenceData().modify(d -> d.setDescription());
+                        } else {
+                            String[] lines = text.split("\\n");
+                            getResidenceData().modify(d -> d.setDescription(lines));
+                        }
+                        PluginMessages.EDIT.DESCRIPTION_UPDATED.sendTo(player, getResidenceData().getDisplayName());
+                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                        open(player, getResidenceData(), previousGUI);
+                    });
                 }
             }
         });

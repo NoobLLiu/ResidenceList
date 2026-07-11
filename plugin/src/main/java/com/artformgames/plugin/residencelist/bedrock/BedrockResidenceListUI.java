@@ -216,7 +216,8 @@ public class BedrockResidenceListUI {
                 btnText.append("\n§1").append(desc);
             }
 
-            form.button(btnText.toString(), FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            String iconPath = BedrockFormUtil.getBlockIconPath(resData.getIconMaterial());
+            form.button(btnText.toString(), FormImage.Type.PATH, iconPath);
         }
 
         // 分页和功能按钮

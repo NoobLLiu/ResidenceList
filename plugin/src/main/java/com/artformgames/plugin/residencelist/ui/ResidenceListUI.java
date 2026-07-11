@@ -60,7 +60,13 @@ public class ResidenceListUI extends AutoPagedGUI {
 
         initItems();
         loadResidences();
-        this.title = CONFIG.TITLE.parseLine(viewer, 1, getLastPageNumber());
+        this.title = CONFIG.TITLE.parseLine(viewer, getTitleType(owner, viewer), 1, getLastPageNumber());
+    }
+
+    private static String getTitleType(@Nullable String owner, @NotNull Player viewer) {
+        if (owner == null) return "所有公开领地";
+        if (owner.equals(viewer.getName())) return "个人领地";
+        return owner + " 的领地";
     }
 
     public @NotNull Player getViewer() {
@@ -134,7 +140,7 @@ public class ResidenceListUI extends AutoPagedGUI {
     @Override
     public void onPageChange(int pageNum) {
         PluginConfig.GUI.CLICK_SOUND.playTo(getViewer());
-        updateTitle(CONFIG.TITLE.parseLine(viewer, pageNum, getLastPageNumber()));
+        updateTitle(CONFIG.TITLE.parseLine(viewer, getTitleType(owner, viewer), pageNum, getLastPageNumber()));
     }
 
     public void loadResidences() {
@@ -226,7 +232,7 @@ public class ResidenceListUI extends AutoPagedGUI {
 
     public interface CONFIG extends Configuration {
 
-        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&l领地列表 &7(&f%(current_page)&7/%(total_page))").params("current_page", "total_page").build();
+        ConfiguredMessage<String> TITLE = ConfiguredMessage.asString().defaults("&a&l领地列表-%(type) &7(&f%(current_page)&7/%(total_page))").params("type", "current_page", "total_page").build();
 
         interface ITEMS extends Configuration {
 
