@@ -275,7 +275,7 @@ public class BedrockPermissionUI {
         if (targetUUIDs.size() > 1) {
             OfflinePlayer first = Bukkit.getOfflinePlayer(targetUUIDs.get(0));
             String firstName = first.getName() != null ? first.getName() : "?";
-            content.append("§c默认以 §e").append(firstName).append(" §c的权限状态为准，保存后将应用到所有已选玩家。");
+            content.append("§7以 §e").append(firstName).append(" §7的权限为底板进行编辑，保存后将应用到所有已选玩家。");
         }
         form.content(content.toString());
 
@@ -340,7 +340,7 @@ public class BedrockPermissionUI {
         StringBuilder label = new StringBuilder();
         label.append("§f已选玩家：§e").append(namesBuilder).append("\n");
         if (targetUUIDs.size() > 1) {
-            label.append("§c默认以 §e").append(firstName).append(" §c的权限状态为准，保存后将应用到所有已选玩家。");
+            label.append("§7以 §e").append(firstName).append(" §7的权限为底板进行编辑，保存后将应用到所有已选玩家。");
         } else {
             label.append("§7正在编辑：§f").append(firstName);
         }

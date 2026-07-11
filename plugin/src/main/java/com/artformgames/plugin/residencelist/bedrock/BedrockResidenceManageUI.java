@@ -81,6 +81,9 @@ public class BedrockResidenceManageUI {
         form.button("§0传送到领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0设置传送点", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0管理评价 §f(" + residenceData.getRates().size() + ")", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0转让领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0出售领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0租借领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0权限管理", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0返回领地列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
@@ -108,8 +111,11 @@ public class BedrockResidenceManageUI {
                         sendManageMenu(player, residenceData, ownerFilter);
                     }
                     case 6 -> sendManageRatesForm(player, residenceData, ownerFilter);
-                    case 7 -> BedrockPermissionUI.open(player, residenceData, ownerFilter);
-                    case 8 -> BedrockResidenceListUI.openList(player, ownerFilter);
+                    case 7 -> BedrockMarketUI.openTransfer(player, residenceData, ownerFilter);
+                    case 8 -> BedrockMarketUI.openSell(player, residenceData, ownerFilter);
+                    case 9 -> BedrockMarketUI.openRent(player, residenceData, ownerFilter);
+                    case 10 -> BedrockPermissionUI.open(player, residenceData, ownerFilter);
+                    case 11 -> BedrockResidenceListUI.openList(player, ownerFilter);
                 }
             });
         });

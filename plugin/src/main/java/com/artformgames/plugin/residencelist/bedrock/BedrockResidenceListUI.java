@@ -67,6 +67,7 @@ public class BedrockResidenceListUI {
         form.button("§0个人领地列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0公开领地列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0创建个人领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§a购买/租借领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0关闭", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
         form.validResultHandler(response -> {
@@ -78,6 +79,7 @@ public class BedrockResidenceListUI {
                     case 1 -> openList(player, player.getName());
                     case 2 -> openList(player, null);
                     case 3 -> BedrockCreateResidenceUI.open(player, null);
+                    case 4 -> BedrockMarketUI.openMarket(player, null);
                 }
             });
         });

@@ -122,6 +122,105 @@ public class ResidenceUtils {
         return res.getLeaveMessage();
     }
 
+    // ======================== Transfer / Market / Rent ========================
+
+    public static boolean transferResidence(@NotNull Player player, @NotNull ClaimedResidence res,
+                                            @NotNull String targetName) {
+        Residence.getInstance().getResidenceManager()
+                .giveResidence(player, targetName, res, isResAdmin(player), true);
+        return true;
+    }
+
+    public static boolean sellResidence(@NotNull Player player, @NotNull ClaimedResidence res, int amount) {
+        Residence.getInstance().getTransactionManager()
+                .putForSale(res, player, amount, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean buyResidence(@NotNull Player player, @NotNull ClaimedResidence res) {
+        Residence.getInstance().getTransactionManager()
+                .buyPlot(res, player, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean removeFromSale(@NotNull Player player, @NotNull ClaimedResidence res) {
+        Residence.getInstance().getTransactionManager()
+                .removeFromSale(player, res, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean isForSale(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getTransactionManager().isForSale(res);
+    }
+
+    public static int getSalePrice(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getTransactionManager().getSaleAmount(res);
+    }
+
+    public static boolean setForRent(@NotNull Player player, @NotNull ClaimedResidence res,
+                                     int cost, int days, boolean allowRenewing,
+                                     boolean stayInMarket, boolean allowAutoPay) {
+        Residence.getInstance().getRentManager()
+                .setForRent(player, res, cost, days, allowRenewing, stayInMarket, allowAutoPay, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean rentResidence(@NotNull Player player, @NotNull ClaimedResidence res, boolean autoPay) {
+        Residence.getInstance().getRentManager()
+                .rent(player, res, autoPay, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean unrentResidence(@NotNull Player player, @NotNull ClaimedResidence res) {
+        Residence.getInstance().getRentManager()
+                .unrent(player, res, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean removeFromRentMarket(@NotNull Player player, @NotNull ClaimedResidence res) {
+        Residence.getInstance().getRentManager()
+                .removeFromForRent(player, res, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean payRent(@NotNull Player player, @NotNull ClaimedResidence res) {
+        Residence.getInstance().getRentManager()
+                .payRent(player, res, isResAdmin(player));
+        return true;
+    }
+
+    public static boolean isForRent(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getRentManager().isForRent(res);
+    }
+
+    public static boolean isRented(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getRentManager().isRented(res);
+    }
+
+    public static String getRentingPlayer(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getRentManager().getRentingPlayer(res);
+    }
+
+    public static int getRentCost(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getRentManager().getCostOfRent(res);
+    }
+
+    public static int getRentDays(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getRentManager().getRentDays(res);
+    }
+
+    public static boolean isRentRepeatable(@NotNull ClaimedResidence res) {
+        return Residence.getInstance().getRentManager().getRentableRepeatable(res);
+    }
+
+    public static boolean isEconomyEnabled() {
+        return Residence.getInstance().getConfigManager().enableEconomy();
+    }
+
+    public static boolean isRentSystemEnabled() {
+        return Residence.getInstance().getConfigManager().enabledRentSystem();
+    }
+
     public static @NotNull List<Flags> getGlobalFlags() {
         List<Flags> list = new ArrayList<>();
         for (Flags f : Flags.values()) {

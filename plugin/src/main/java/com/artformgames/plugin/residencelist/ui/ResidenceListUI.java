@@ -135,6 +135,16 @@ public class ResidenceListUI extends AutoPagedGUI {
                 CreateResidenceUI.open(clicker, owner);
             }
         });
+
+        // 购买/租借领地按钮 slot 46（打开市场页面）
+        setItem(46, new GUIItem(CONFIG.ITEMS.MARKET.get(getViewer())) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                clicker.closeInventory();
+                ResidenceMarketUI.open(clicker, ResidenceListUI.this);
+            }
+        });
     }
 
     @Override
@@ -261,6 +271,17 @@ public class ResidenceListUI extends AutoPagedGUI {
                             "&7请确保你已经用领地选取工具选好了区域。",
                             "&7",
                             "&a ▶ 点击 &8|&f 创建领地"
+                    ).build();
+
+            ConfiguredItem MARKET = ConfiguredItem.create()
+                    .defaultType(Material.EMERALD)
+                    .defaultName("&a&l购买/租借领地")
+                    .defaultLore(
+                            "&7",
+                            "&7浏览市场中正在出售或出租的领地",
+                            "&7购买或租用其他玩家提供的领地",
+                            "&7",
+                            "&a ▶ 点击 &8|&f 打开领地市场"
                     ).build();
 
             ConfiguredItem AUTO_SELECT_ENABLED = ConfiguredItem.create()

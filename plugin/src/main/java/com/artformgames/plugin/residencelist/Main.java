@@ -92,6 +92,7 @@ public class Main extends EasyPlugin implements ResidenceListPlugin {
 
         log("Saving all data to storage...");
         this.storage.shutdown();
+        this.storage = null;
 
     }
 

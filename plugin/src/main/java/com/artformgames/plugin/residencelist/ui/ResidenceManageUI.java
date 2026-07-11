@@ -5,6 +5,7 @@ import cc.carm.lib.easyplugin.gui.GUI;
 import cc.carm.lib.easyplugin.gui.GUIItem;
 import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
+import cc.carm.lib.easyplugin.utils.ColorParser;
 import cc.carm.lib.mineconfiguration.bukkit.value.ConfiguredMessage;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.ConfiguredItem;
 import cc.carm.lib.mineconfiguration.bukkit.value.item.PreparedItem;
@@ -23,9 +24,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class ResidenceManageUI extends AutoPagedGUI {
@@ -67,6 +72,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
         loadRates();
         loadPermissions();
         loadAdvanced();
+        loadMarketActions();
     }
 
     public @NotNull Player getViewer() {
@@ -372,6 +378,266 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 });
             }
         });
+    }
+
+    public void loadMarketActions() {
+        ClaimedResidence residence = getResidenceData().getResidence();
+        boolean canManage = ResidenceUtils.canManage(viewer, residence);
+
+        if (canManage) {
+            setItem(30, new GUIItem(buildTransferItem()) {
+                @Override
+                public void onClick(Player clicker, ClickType type) {
+                    if (!type.isLeftClick()) return;
+                    PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                    clicker.closeInventory();
+                    AnvilNameInput.open(clicker, "输入目标玩家名称（保留权限）", "目标玩家名称", (player, text) -> {
+                        if (text == null || text.trim().isEmpty()) {
+                            ResidenceListUI.open(player, null);
+                            return;
+                        }
+                        boolean success = ResidenceUtils.transferResidence(player, residence, text.trim());
+                        if (success) {
+                            PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                            ResidenceListUI.open(player, null);
+                        } else {
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(player);
+                            open(player, getResidenceData(), previousGUI);
+                        }
+                    });
+                }
+            });
+        }
+
+        setItem(31, new GUIItem(buildSellBuyItem(canManage)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                if (canManage) {
+                    if (ResidenceUtils.isForSale(residence)) {
+                        boolean success = ResidenceUtils.removeFromSale(clicker, residence);
+                        if (success) {
+                            PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
+                            open(clicker, getResidenceData(), previousGUI);
+                        } else {
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                        }
+                    } else {
+                        if (!ResidenceUtils.isEconomyEnabled()) {
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                            return;
+                        }
+                        clicker.closeInventory();
+                        AnvilNameInput.open(clicker, "输入出售价格", "价格", (player, text) -> {
+                            if (text == null || text.trim().isEmpty()) {
+                                open(player, getResidenceData(), previousGUI);
+                                return;
+                            }
+                            try {
+                                int amount = Integer.parseInt(text.trim());
+                                if (amount <= 0) {
+                                    PluginMessages.EDIT.FAILED_SOUND.playTo(player);
+                                    open(player, getResidenceData(), previousGUI);
+                                    return;
+                                }
+                                boolean success = ResidenceUtils.sellResidence(player, residence, amount);
+                                if (success) {
+                                    PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                                } else {
+                                    PluginMessages.EDIT.FAILED_SOUND.playTo(player);
+                                }
+                                open(player, getResidenceData(), previousGUI);
+                            } catch (NumberFormatException e) {
+                                PluginMessages.EDIT.FAILED_SOUND.playTo(player);
+                                open(player, getResidenceData(), previousGUI);
+                            }
+                        });
+                    }
+                } else {
+                    boolean success = ResidenceUtils.buyResidence(clicker, residence);
+                    if (success) {
+                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
+                        ResidenceListUI.open(clicker, clicker.getName());
+                    } else {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                    }
+                }
+            }
+        });
+
+        setItem(32, new GUIItem(buildRentItem(canManage)) {
+            @Override
+            public void onClick(Player clicker, ClickType type) {
+                if (!type.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
+                if (canManage) {
+                    if (ResidenceUtils.isForRent(residence)) {
+                        if (ResidenceUtils.isRented(residence)) {
+                            boolean success = ResidenceUtils.unrentResidence(clicker, residence);
+                            if (success) {
+                                PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
+                                open(clicker, getResidenceData(), previousGUI);
+                            } else {
+                                PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                            }
+                        } else {
+                            boolean success = ResidenceUtils.removeFromRentMarket(clicker, residence);
+                            if (success) {
+                                PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
+                                open(clicker, getResidenceData(), previousGUI);
+                            } else {
+                                PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                            }
+                        }
+                    } else {
+                        if (!ResidenceUtils.isRentSystemEnabled()) {
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                            return;
+                        }
+                        ResidenceRentSettingsUI.open(clicker, getResidenceData(), ResidenceManageUI.this);
+                    }
+                } else {
+                    boolean success = ResidenceUtils.rentResidence(clicker, residence, false);
+                    if (success) {
+                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
+                        ResidenceListUI.open(clicker, null);
+                    } else {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(clicker);
+                    }
+                }
+            }
+        });
+    }
+
+    protected ItemStack buildTransferItem() {
+        ItemStack item = new ItemStack(Material.GOLDEN_AXE);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorParser.parse("&6&l转让领地"));
+            List<String> lore = new ArrayList<>();
+            lore.add(ColorParser.parse("&7将领地转让给其他玩家"));
+            lore.add(ColorParser.parse("&7转让后保留原有权限设置"));
+            lore.add(ColorParser.parse(""));
+            lore.add(ColorParser.parse("&e▶ 左键 &8| &f转让领地"));
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    protected ItemStack buildSellBuyItem(boolean canManage) {
+        ClaimedResidence residence = getResidenceData().getResidence();
+        if (!ResidenceUtils.isEconomyEnabled()) {
+            ItemStack item = new ItemStack(Material.BARRIER);
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName(ColorParser.parse("&c&l经济系统未启用"));
+                meta.setLore(List.of(ColorParser.parse("&7经济系统未启用")));
+                item.setItemMeta(meta);
+            }
+            return item;
+        }
+
+        ItemStack item = new ItemStack(Material.EMERALD);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        List<String> lore = new ArrayList<>();
+        if (canManage) {
+            if (ResidenceUtils.isForSale(residence)) {
+                int price = ResidenceUtils.getSalePrice(residence);
+                meta.setDisplayName(ColorParser.parse("&a&l出售中（点击取消）"));
+                lore.add(ColorParser.parse("&7当前售价: &e" + price));
+                lore.add(ColorParser.parse(""));
+                lore.add(ColorParser.parse("&e▶ 左键 &8| &f取消出售"));
+            } else {
+                meta.setDisplayName(ColorParser.parse("&a&l出售领地"));
+                lore.add(ColorParser.parse("&7将领地挂牌出售给其他玩家"));
+                lore.add(ColorParser.parse(""));
+                lore.add(ColorParser.parse("&e▶ 左键 &8| &f输入价格并出售"));
+            }
+        } else {
+            if (ResidenceUtils.isForSale(residence)) {
+                int price = ResidenceUtils.getSalePrice(residence);
+                meta.setDisplayName(ColorParser.parse("&a&l购买领地"));
+                lore.add(ColorParser.parse("&7售价: &e" + price));
+                lore.add(ColorParser.parse(""));
+                lore.add(ColorParser.parse("&e▶ 左键 &8| &f购买此领地"));
+            } else {
+                meta.setDisplayName(ColorParser.parse("&a&l出售领地"));
+                lore.add(ColorParser.parse("&7该领地未出售"));
+            }
+        }
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    protected ItemStack buildRentItem(boolean canManage) {
+        ClaimedResidence residence = getResidenceData().getResidence();
+        if (!ResidenceUtils.isRentSystemEnabled()) {
+            ItemStack item = new ItemStack(Material.BARRIER);
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName(ColorParser.parse("&c&l租借系统未启用"));
+                meta.setLore(List.of(ColorParser.parse("&7租借系统未启用")));
+                item.setItemMeta(meta);
+            }
+            return item;
+        }
+
+        ItemStack item = new ItemStack(Material.BOOK);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        List<String> lore = new ArrayList<>();
+        if (canManage) {
+            if (ResidenceUtils.isForRent(residence)) {
+                if (ResidenceUtils.isRented(residence)) {
+                    String renter = ResidenceUtils.getRentingPlayer(residence);
+                    int cost = ResidenceUtils.getRentCost(residence);
+                    int days = ResidenceUtils.getRentDays(residence);
+                    meta.setDisplayName(ColorParser.parse("&b&l已出租（管理）"));
+                    lore.add(ColorParser.parse("&7租客: &e" + (renter != null ? renter : "未知")));
+                    lore.add(ColorParser.parse("&7租金: &e" + cost));
+                    lore.add(ColorParser.parse("&7租期: &e" + days + " 天"));
+                    lore.add(ColorParser.parse(""));
+                    lore.add(ColorParser.parse("&e▶ 左键 &8| &f强制退租"));
+                } else {
+                    int cost = ResidenceUtils.getRentCost(residence);
+                    int days = ResidenceUtils.getRentDays(residence);
+                    boolean repeatable = ResidenceUtils.isRentRepeatable(residence);
+                    meta.setDisplayName(ColorParser.parse("&b&l出租中（点击取消）"));
+                    lore.add(ColorParser.parse("&7日租金: &e" + cost));
+                    lore.add(ColorParser.parse("&7租期: &e" + days + " 天"));
+                    lore.add(ColorParser.parse("&7自动续租: " + (repeatable ? "&a是" : "&c否")));
+                    lore.add(ColorParser.parse(""));
+                    lore.add(ColorParser.parse("&e▶ 左键 &8| &f取消出租"));
+                }
+            } else {
+                meta.setDisplayName(ColorParser.parse("&b&l设置出租"));
+                lore.add(ColorParser.parse("&7将领地出租给其他玩家"));
+                lore.add(ColorParser.parse(""));
+                lore.add(ColorParser.parse("&e▶ 左键 &8| &f设置出租参数"));
+            }
+        } else {
+            if (ResidenceUtils.isForRent(residence) && !ResidenceUtils.isRented(residence)) {
+                int cost = ResidenceUtils.getRentCost(residence);
+                int days = ResidenceUtils.getRentDays(residence);
+                meta.setDisplayName(ColorParser.parse("&b&l租用领地"));
+                lore.add(ColorParser.parse("&7日租金: &e" + cost));
+                lore.add(ColorParser.parse("&7租期: &e" + days + " 天"));
+                lore.add(ColorParser.parse(""));
+                lore.add(ColorParser.parse("&e▶ 左键 &8| &f租用此领地"));
+            } else {
+                meta.setDisplayName(ColorParser.parse("&b&l设置出租"));
+                lore.add(ColorParser.parse("&7该领地未出租"));
+            }
+        }
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
     }
 
     public void loadRates() {
