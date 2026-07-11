@@ -37,7 +37,12 @@ public class ResidenceFlagUI extends AutoPagedGUI {
 
     public ResidenceFlagUI(@NotNull Player viewer, @NotNull ClaimedResidence residence,
                            @Nullable GUI previousGUI, @Nullable ResidenceFlagCategory category) {
-        super(GUIType.SIX_BY_NINE, computeTitle(residence, category), 28, 52);
+        this(viewer, residence, previousGUI, category, 1);
+    }
+
+    public ResidenceFlagUI(@NotNull Player viewer, @NotNull ClaimedResidence residence,
+                           @Nullable GUI previousGUI, @Nullable ResidenceFlagCategory category, int page) {
+        super(GUIType.SIX_BY_NINE, computeTitle(residence, category), 10, 52);
         this.viewer = viewer;
         this.residence = residence;
         this.previousGUI = previousGUI;
@@ -53,6 +58,9 @@ public class ResidenceFlagUI extends AutoPagedGUI {
 
         initItems();
         loadContent();
+        if (page > 1 && page <= getLastPageNumber()) {
+            setCurrentPage(page);
+        }
     }
 
     private static @NotNull String computeTitle(@NotNull ClaimedResidence residence, @Nullable ResidenceFlagCategory category) {
@@ -213,7 +221,8 @@ public class ResidenceFlagUI extends AutoPagedGUI {
                 boolean success = ResidenceUtils.setGlobalFlag(player, residence, flagName, state);
                 if (success) {
                     PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                    new ResidenceFlagUI(player, residence, previousGUI, category).openGUI(player);
+                    ResidenceFlagUI newUI = new ResidenceFlagUI(player, residence, previousGUI, category, getCurrentPage());
+                    newUI.openGUI(player);
                 } else {
                     PluginMessages.EDIT.FAILED_SOUND.playTo(player);
                 }

@@ -80,7 +80,8 @@ public class ResidenceUtils {
                                         @Nullable String state) {
         String playerName = Bukkit.getOfflinePlayer(targetUUID).getName();
         if (playerName == null) return false;
-        return res.getPermissions().setPlayerFlag(playerName, flag, toFlagState(state));
+        return res.getPermissions().setPlayerFlag(player, playerName, flag,
+                state == null ? "remove" : state, isResAdmin(player), false);
     }
 
     public static boolean removePlayerAllFlags(@NotNull Player player, @NotNull ClaimedResidence res,

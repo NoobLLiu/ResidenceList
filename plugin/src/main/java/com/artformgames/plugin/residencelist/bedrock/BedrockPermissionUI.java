@@ -136,15 +136,21 @@ public class BedrockPermissionUI {
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【全局权限-" + category.getDisplayName() + "】");
 
+        form.toggle("§c关闭并返回上一级（不保存）", false);
+
         for (Flags flag : flags) {
             boolean current = residence.getPermissions().has(flag, flag.isEnabled());
             form.toggle(flag.getName() + " - " + BedrockFormUtil.stripColor(flag.getDesc()), current);
         }
 
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
+            if (response.asToggle(0)) {
+                sendGlobalFlagCategoryList(player, residenceData, ownerFilter);
+                return;
+            }
             for (int i = 0; i < flags.size(); i++) {
                 Flags flag = flags.get(i);
-                boolean value = response.asToggle(i);
+                boolean value = response.asToggle(i + 1);
                 ResidenceUtils.setGlobalFlag(player, residence, flag.getName(), value ? "true" : "false");
             }
             PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
@@ -301,15 +307,21 @@ public class BedrockPermissionUI {
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【玩家权限-" + targetName + "-" + category.getDisplayName() + "】");
 
+        form.toggle("§c关闭并返回上一级（不保存）", false);
+
         for (Flags flag : flags) {
             boolean current = residence.getPermissions().playerHas(targetName, flag.getName(), flag.isEnabled());
             form.toggle(flag.getName() + " - " + BedrockFormUtil.stripColor(flag.getDesc()), current);
         }
 
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
+            if (response.asToggle(0)) {
+                sendPlayerCategoryListForm(player, residenceData, targetUUID, ownerFilter);
+                return;
+            }
             for (int i = 0; i < flags.size(); i++) {
                 Flags flag = flags.get(i);
-                boolean value = response.asToggle(i);
+                boolean value = response.asToggle(i + 1);
                 ResidenceUtils.setPlayerFlag(player, residence, targetUUID, flag.getName(), value ? "true" : "false");
             }
             PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);

@@ -44,7 +44,12 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
 
     public ResidencePlayerPermUI(@NotNull Player viewer, @NotNull ClaimedResidence residence,
                                  @Nullable GUI previousGUI, @Nullable UUID selectedPlayer) {
-        super(GUIType.SIX_BY_NINE, computeTitle(residence, selectedPlayer), 28, 52);
+        this(viewer, residence, previousGUI, selectedPlayer, 1);
+    }
+
+    public ResidencePlayerPermUI(@NotNull Player viewer, @NotNull ClaimedResidence residence,
+                                 @Nullable GUI previousGUI, @Nullable UUID selectedPlayer, int page) {
+        super(GUIType.SIX_BY_NINE, computeTitle(residence, selectedPlayer), 10, 52);
         this.viewer = viewer;
         this.residence = residence;
         this.previousGUI = previousGUI;
@@ -60,6 +65,9 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
 
         initItems();
         loadContent();
+        if (page > 1 && page <= getLastPageNumber()) {
+            setCurrentPage(page);
+        }
     }
 
     private static @NotNull String computeTitle(@NotNull ClaimedResidence residence, @Nullable UUID selectedPlayer) {
@@ -323,7 +331,8 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
                 boolean success = ResidenceUtils.setPlayerFlag(player, residence, selectedPlayer, flagName, state);
                 if (success) {
                     PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                    new ResidencePlayerPermUI(player, residence, previousGUI, selectedPlayer).openGUI(player);
+                    ResidencePlayerPermUI newUI = new ResidencePlayerPermUI(player, residence, previousGUI, selectedPlayer, getCurrentPage());
+                    newUI.openGUI(player);
                 } else {
                     PluginMessages.EDIT.FAILED_SOUND.playTo(player);
                 }
