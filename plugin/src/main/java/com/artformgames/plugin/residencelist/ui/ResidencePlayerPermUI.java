@@ -256,7 +256,7 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
     }
 
     protected GUIItem createFlagItem(@NotNull Flags flag) {
-        String flagName = flag.getName();
+        String flagName = flag.name();
         OfflinePlayer op = Bukkit.getOfflinePlayer(selectedPlayer);
         String playerName = op.getName();
         if (playerName == null) return new GUIItem(new ItemStack(Material.BARRIER));

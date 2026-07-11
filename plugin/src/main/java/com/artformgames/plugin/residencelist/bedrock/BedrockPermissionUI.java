@@ -18,6 +18,7 @@ import org.geysermc.cumulus.form.SimpleForm;
 import org.geysermc.cumulus.util.FormImage;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -136,7 +137,10 @@ public class BedrockPermissionUI {
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【全局权限-" + category.getDisplayName() + "】");
 
-        form.toggle("§c关闭并返回上一级（不保存）", false);
+        form.stepSlider("操作", 0,
+                "保存并继续编辑",
+                "保存并返回上一级",
+                "不保存，直接返回");
 
         for (Flags flag : flags) {
             boolean current = residence.getPermissions().has(flag, flag.isEnabled());
@@ -144,17 +148,26 @@ public class BedrockPermissionUI {
         }
 
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
-            if (response.asToggle(0)) {
+            int action = response.asStepSlider(0);
+            if (action == 2) {
+                // 不保存，直接返回
                 sendGlobalFlagCategoryList(player, residenceData, ownerFilter);
                 return;
             }
+            // Save flags
             for (int i = 0; i < flags.size(); i++) {
                 Flags flag = flags.get(i);
                 boolean value = response.asToggle(i + 1);
-                ResidenceUtils.setGlobalFlag(player, residence, flag.getName(), value ? "true" : "false");
+                ResidenceUtils.setGlobalFlag(player, residence, flag.name(), value ? "true" : "false");
             }
             PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-            sendGlobalFlagCategoryForm(player, residenceData, category, ownerFilter);
+            if (action == 0) {
+                // 保存并继续编辑
+                sendGlobalFlagCategoryForm(player, residenceData, category, ownerFilter);
+            } else {
+                // 保存并返回上一级 (action == 1)
+                sendGlobalFlagCategoryList(player, residenceData, ownerFilter);
+            }
         }));
 
         form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
@@ -176,35 +189,24 @@ public class BedrockPermissionUI {
                 .title("§e【领地系统-玩家权限管理】");
 
         StringBuilder content = new StringBuilder();
-        content.append("§f当前信任玩家数量: §e").append(trusted.size()).append("\n");
-        content.append("§f点击玩家编辑权限，或添加/移除信任玩家。");
+        content.append("§f当前信任玩家列表（").append(trusted.size()).append("）\n");
+        content.append("§f请选择操作：");
         form.content(content.toString());
 
         form.button("§a添加信任玩家", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        for (ResidencePlayer rp : trusted) {
-            String playerName = rp.getName() != null ? rp.getName() : "?";
-            form.button("§0" + playerName, FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        }
-        form.button("§c移除玩家", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§b编辑信任玩家", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§c移除信任玩家", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-
-        final int addIndex = 0;
-        final int removeIndex = 1 + trusted.size();
-        final int backIndex = removeIndex + 1;
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                if (clicked == addIndex) {
-                    sendAddTrustedPlayerForm(player, residenceData, ownerFilter);
-                } else if (clicked >= 1 && clicked <= trusted.size()) {
-                    ResidencePlayer target = trusted.get(clicked - 1);
-                    sendPlayerCategoryListForm(player, residenceData, target.getUuid(), ownerFilter);
-                } else if (clicked == removeIndex) {
-                    sendRemovePlayerList(player, residenceData, ownerFilter);
-                } else if (clicked == backIndex) {
-                    sendPermissionMenu(player, residenceData, ownerFilter);
+                switch (clicked) {
+                    case 0 -> sendAddTrustedPlayerForm(player, residenceData, ownerFilter);
+                    case 1 -> sendEditTrustedPlayerSelector(player, residenceData, ownerFilter);
+                    case 2 -> sendRemoveTrustedPlayerSelector(player, residenceData, ownerFilter);
+                    case 3 -> sendPermissionMenu(player, residenceData, ownerFilter);
                 }
             });
         });
@@ -251,17 +253,31 @@ public class BedrockPermissionUI {
     }
 
     /**
-     * 为指定玩家选择权限分类。
+     * 为已选玩家选择权限分类。
      */
     private static void sendPlayerCategoryListForm(Player player, ResidenceData residenceData,
-                                                   UUID targetUUID, String ownerFilter) {
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
-        String targetName = target.getName() != null ? target.getName() : "?";
+                                                   List<UUID> targetUUIDs, String ownerFilter) {
+        // Build display names
+        StringBuilder namesBuilder = new StringBuilder();
+        for (UUID uuid : targetUUIDs) {
+            OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+            String name = op.getName() != null ? op.getName() : "?";
+            namesBuilder.append(name).append(", ");
+        }
+        if (namesBuilder.length() > 2) namesBuilder.setLength(namesBuilder.length() - 2);
+        String names = namesBuilder.toString();
 
         SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e【玩家权限-" + targetName + "】");
+                .title("§e【已选玩家权限分类】");
 
-        form.content("§f选择要编辑的权限分类。");
+        StringBuilder content = new StringBuilder();
+        content.append("§f已选玩家：§e").append(names).append("\n");
+        if (targetUUIDs.size() > 1) {
+            OfflinePlayer first = Bukkit.getOfflinePlayer(targetUUIDs.get(0));
+            String firstName = first.getName() != null ? first.getName() : "?";
+            content.append("§c默认以 §e").append(firstName).append(" §c的权限状态为准，保存后将应用到所有已选玩家。");
+        }
+        form.content(content.toString());
 
         for (ResidenceFlagCategory category : ResidenceFlagCategory.all()) {
             form.button("§0" + category.getDisplayName(), FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
@@ -275,7 +291,7 @@ public class BedrockPermissionUI {
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
                 if (clicked >= 0 && clicked < backIndex) {
-                    sendPlayerFlagForm(player, residenceData, targetUUID,
+                    sendPlayerFlagForm(player, residenceData, targetUUIDs,
                             ResidenceFlagCategory.all().get(clicked), ownerFilter);
                 } else if (clicked == backIndex) {
                     sendPlayerPermissionMenu(player, residenceData, ownerFilter);
@@ -290,124 +306,208 @@ public class BedrockPermissionUI {
     }
 
     /**
-     * 为指定玩家编辑某一分类下的权限开关。
+     * 为已选玩家编辑某一分类下的权限开关（支持批量）。
      */
-    private static void sendPlayerFlagForm(Player player, ResidenceData residenceData, UUID targetUUID,
-                                           ResidenceFlagCategory category, String ownerFilter) {
+    private static void sendPlayerFlagForm(Player player, ResidenceData residenceData,
+                                           List<UUID> targetUUIDs, ResidenceFlagCategory category,
+                                           String ownerFilter) {
         ClaimedResidence residence = residenceData.getResidence();
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
-        String targetName = target.getName();
-        if (targetName == null) {
+
+        // Use first player for default values
+        UUID firstUUID = targetUUIDs.get(0);
+        OfflinePlayer firstOp = Bukkit.getOfflinePlayer(firstUUID);
+        String firstName = firstOp.getName();
+        if (firstName == null) {
             sendPlayerPermissionMenu(player, residenceData, ownerFilter);
             return;
         }
 
+        // Build all names for display
+        StringBuilder namesBuilder = new StringBuilder();
+        for (UUID uuid : targetUUIDs) {
+            OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+            String name = op.getName() != null ? op.getName() : "?";
+            namesBuilder.append(name).append(", ");
+        }
+        if (namesBuilder.length() > 2) namesBuilder.setLength(namesBuilder.length() - 2);
+
         List<Flags> flags = category.getPlayerFlags();
 
         CustomForm.Builder form = CustomForm.builder()
-                .title("§e【玩家权限-" + targetName + "-" + category.getDisplayName() + "】");
+                .title("§e【玩家权限-" + category.getDisplayName() + "】");
 
-        form.toggle("§c关闭并返回上一级（不保存）", false);
+        // Label: selected players info
+        StringBuilder label = new StringBuilder();
+        label.append("§f已选玩家：§e").append(namesBuilder).append("\n");
+        if (targetUUIDs.size() > 1) {
+            label.append("§c默认以 §e").append(firstName).append(" §c的权限状态为准，保存后将应用到所有已选玩家。");
+        } else {
+            label.append("§7正在编辑：§f").append(firstName);
+        }
+        form.label(label.toString());
 
+        // StepSlider for action
+        form.stepSlider("操作", 0,
+                "保存并继续编辑",
+                "保存并返回分类",
+                "不保存，直接返回分类");
+
+        // Flag toggles - read from first player
         for (Flags flag : flags) {
-            boolean current = residence.getPermissions().playerHas(targetName, flag.getName(), flag.isEnabled());
+            boolean current = residence.getPermissions().playerHas(firstName, flag.name(), flag.isEnabled());
             form.toggle(flag.getName() + " - " + BedrockFormUtil.stripColor(flag.getDesc()), current);
         }
 
+        // stepSlider is at index 0, label has no index, toggles start at index 1
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
-            if (response.asToggle(0)) {
-                sendPlayerCategoryListForm(player, residenceData, targetUUID, ownerFilter);
+            int action = response.asStepSlider(0);
+            if (action == 2) {
+                // 不保存，直接返回
+                sendPlayerCategoryListForm(player, residenceData, targetUUIDs, ownerFilter);
                 return;
             }
+            // Save: apply to all selected players
             for (int i = 0; i < flags.size(); i++) {
                 Flags flag = flags.get(i);
                 boolean value = response.asToggle(i + 1);
-                ResidenceUtils.setPlayerFlag(player, residence, targetUUID, flag.getName(), value ? "true" : "false");
+                String stateStr = value ? "true" : "false";
+                for (UUID uuid : targetUUIDs) {
+                    ResidenceUtils.setPlayerFlag(player, residence, uuid, flag.name(), stateStr);
+                }
             }
             PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-            sendPlayerFlagForm(player, residenceData, targetUUID, category, ownerFilter);
+            if (action == 0) {
+                // 保存并继续编辑
+                sendPlayerFlagForm(player, residenceData, targetUUIDs, category, ownerFilter);
+            } else {
+                // 保存并返回分类 (action == 1)
+                sendPlayerCategoryListForm(player, residenceData, targetUUIDs, ownerFilter);
+            }
         }));
 
         form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
-                sendPlayerCategoryListForm(player, residenceData, targetUUID, ownerFilter)));
+                sendPlayerCategoryListForm(player, residenceData, targetUUIDs, ownerFilter)));
 
         BedrockFormUtil.sendForm(player, form);
     }
 
     /**
-     * 移除玩家列表。
+     * 编辑信任玩家：打开通用选择器选择已信任玩家。
      */
-    private static void sendRemovePlayerList(Player player, ResidenceData residenceData, String ownerFilter) {
+    private static void sendEditTrustedPlayerSelector(Player player, ResidenceData residenceData, String ownerFilter) {
         ClaimedResidence residence = residenceData.getResidence();
         List<ResidencePlayer> trusted = new ArrayList<>(residence.getTrustedPlayers());
 
         if (trusted.isEmpty()) {
             SimpleForm.Builder form = SimpleForm.builder()
-                    .title("§e【领地系统-移除玩家】")
-                    .content("§f当前没有信任玩家可以移除。")
+                    .title("§e【领地系统-编辑信任玩家】")
+                    .content("§f当前没有信任玩家。")
                     .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
-
             form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
                     sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
-
             BedrockFormUtil.sendForm(player, form);
             return;
         }
 
-        SimpleForm.Builder form = SimpleForm.builder()
-                .title("§e【领地系统-移除玩家】");
-
-        form.content("§f点击要移除的玩家。");
-
+        List<UUID> candidates = new ArrayList<>();
         for (ResidencePlayer rp : trusted) {
-            String playerName = rp.getName() != null ? rp.getName() : "?";
-            form.button("§c移除 §f" + playerName, FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            candidates.add(rp.getUniqueId());
         }
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
-        final int backIndex = trusted.size();
-
-        form.validResultHandler(response -> {
-            int clicked = response.clickedButtonId();
-            BedrockFormUtil.runSync(() -> {
-                PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                if (clicked >= 0 && clicked < backIndex) {
-                    sendRemovePlayerConfirm(player, residenceData, trusted.get(clicked).getUuid(), ownerFilter);
-                } else if (clicked == backIndex) {
-                    sendPlayerPermissionMenu(player, residenceData, ownerFilter);
-                }
-            });
-        });
-
-        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
-                sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
-
-        BedrockFormUtil.sendForm(player, form);
+        BedrockPlayerSelector.open(
+                player,
+                "§e【编辑信任玩家-选择玩家】",
+                candidates,
+                new java.util.LinkedHashSet<>(),
+                1,
+                selected -> {
+                    if (selected.isEmpty()) {
+                        sendPlayerPermissionMenu(player, residenceData, ownerFilter);
+                    } else {
+                        List<UUID> selectedList = new ArrayList<>(selected);
+                        sendPlayerCategoryListForm(player, residenceData, selectedList, ownerFilter);
+                    }
+                },
+                () -> sendPlayerPermissionMenu(player, residenceData, ownerFilter)
+        );
     }
 
     /**
-     * 确认移除玩家权限。
+     * 移除信任玩家：打开通用选择器选择要移除的玩家。
      */
-    private static void sendRemovePlayerConfirm(Player player, ResidenceData residenceData,
-                                                UUID targetUUID, String ownerFilter) {
+    private static void sendRemoveTrustedPlayerSelector(Player player, ResidenceData residenceData, String ownerFilter) {
         ClaimedResidence residence = residenceData.getResidence();
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetUUID);
-        String targetName = target.getName() != null ? target.getName() : "?";
+        List<ResidencePlayer> trusted = new ArrayList<>(residence.getTrustedPlayers());
+
+        if (trusted.isEmpty()) {
+            SimpleForm.Builder form = SimpleForm.builder()
+                    .title("§e【领地系统-移除信任玩家】")
+                    .content("§f当前没有信任玩家可以移除。")
+                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            form.validResultHandler(response ->
+                    BedrockFormUtil.runSync(() -> sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
+            form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
+                    sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
+            BedrockFormUtil.sendForm(player, form);
+            return;
+        }
+
+        List<UUID> candidates = new ArrayList<>();
+        for (ResidencePlayer rp : trusted) {
+            candidates.add(rp.getUniqueId());
+        }
+
+        BedrockPlayerSelector.open(
+                player,
+                "§c【移除信任玩家-选择玩家】",
+                candidates,
+                new java.util.LinkedHashSet<>(),
+                1,
+                selected -> {
+                    if (selected.isEmpty()) {
+                        sendPlayerPermissionMenu(player, residenceData, ownerFilter);
+                    } else {
+                        List<UUID> selectedList = new ArrayList<>(selected);
+                        sendBatchRemoveConfirm(player, residenceData, selectedList, ownerFilter);
+                    }
+                },
+                () -> sendPlayerPermissionMenu(player, residenceData, ownerFilter)
+        );
+    }
+
+    /**
+     * 批量移除确认。
+     */
+    private static void sendBatchRemoveConfirm(Player player, ResidenceData residenceData,
+                                               List<UUID> targets, String ownerFilter) {
+        ClaimedResidence residence = residenceData.getResidence();
+
+        StringBuilder names = new StringBuilder();
+        for (UUID uuid : targets) {
+            OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+            String name = op.getName() != null ? op.getName() : "?";
+            names.append(name).append(", ");
+        }
+        if (names.length() > 2) names.setLength(names.length() - 2);
 
         ModalForm.Builder form = ModalForm.builder()
                 .title("§c【领地系统-确认移除玩家】")
-                .content("§f确定要移除玩家 §e" + targetName + " §f的所有权限吗？\n\n"
+                .content("§f确定要移除以下 §e" + targets.size() + " §f名玩家的所有权限吗？\n\n"
+                        + "§e" + names + "\n\n"
                         + "§c此操作不可撤销。")
                 .button1("§0确认移除")
                 .button2("§0取消");
 
         form.validResultHandler(response -> BedrockFormUtil.runSync(() -> {
             if (response.clickedButtonId() == 0) {
-                boolean success = ResidenceUtils.removePlayerAllFlags(player, residence, targetUUID);
-                if (success) {
+                boolean allSuccess = true;
+                for (UUID uuid : targets) {
+                    boolean success = ResidenceUtils.removePlayerAllFlags(player, residence, uuid);
+                    if (!success) allSuccess = false;
+                }
+                if (allSuccess) {
                     PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
                 } else {
                     PluginMessages.EDIT.FAILED_SOUND.playTo(player);
@@ -417,7 +517,7 @@ public class BedrockPermissionUI {
         }));
 
         form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
-                sendRemovePlayerList(player, residenceData, ownerFilter)));
+                sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
 
         BedrockFormUtil.sendForm(player, form);
     }

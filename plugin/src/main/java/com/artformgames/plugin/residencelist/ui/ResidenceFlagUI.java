@@ -151,7 +151,7 @@ public class ResidenceFlagUI extends AutoPagedGUI {
     }
 
     protected GUIItem createFlagItem(@NotNull Flags flag) {
-        String flagName = flag.getName();
+        String flagName = flag.name();
         Boolean value = residence.getPermissions().getFlags().get(flagName);
 
         boolean isSet = value != null;
