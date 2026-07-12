@@ -27,10 +27,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class ResidencePlayerPermUI extends AutoPagedGUI {
@@ -44,9 +42,6 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
     protected final @Nullable GUI previousGUI;
     protected final @Nullable UUID selectedPlayer;
     protected final @Nullable List<UUID> batchPlayers;
-
-    protected boolean batchMode = false;
-    protected final @NotNull Set<UUID> batchSelected = new HashSet<>();
 
     public ResidencePlayerPermUI(@NotNull Player viewer, @NotNull ClaimedResidence residence,
                                  @Nullable GUI previousGUI, @Nullable UUID selectedPlayer) {
@@ -217,71 +212,74 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
                 }
             });
         } else {
-            ItemStack batchItem = new ItemStack(batchMode ? Material.ENCHANTING_TABLE : Material.NETHER_STAR);
-            ItemMeta batchMeta = batchItem.getItemMeta();
-            if (batchMeta != null) {
-                if (batchMode) {
-                    batchMeta.setDisplayName(ColorParser.parse("&e&l批量编辑模式"));
-                    List<String> lore = new ArrayList<>();
-                    lore.add(ColorParser.parse("&7已选择 &f" + batchSelected.size() + " &7名玩家"));
-                    lore.add(ColorParser.parse("&7"));
-                    if (batchSelected.isEmpty()) {
-                        lore.add(ColorParser.parse("&c▶ 左键 &8| &f退出批量编辑"));
-                    } else {
-                        lore.add(ColorParser.parse("&a▶ 左键 &8| &f确认选择，开始批量编辑"));
-                        lore.add(ColorParser.parse("&c▶ 右键 &8| &f清空选择"));
-                        lore.add(ColorParser.parse("&7▶ Shift+左键 &8| &f退出批量编辑"));
-                    }
-                } else {
-                    batchMeta.setDisplayName(ColorParser.parse("&e&l切换批量编辑"));
-                    List<String> lore2 = new ArrayList<>();
-                    lore2.add(ColorParser.parse("&7"));
-                    lore2.add(ColorParser.parse("&e▶ 左键 &8| &f进入批量编辑模式"));
-                    batchMeta.setLore(lore2);
-                }
-                batchItem.setItemMeta(batchMeta);
+            ItemStack addItem = new ItemStack(Material.EMERALD);
+            ItemMeta addMeta = addItem.getItemMeta();
+            if (addMeta != null) {
+                addMeta.setDisplayName(ColorParser.parse("&a&l添加信任玩家"));
+                List<String> lore = new ArrayList<>();
+                lore.add(ColorParser.parse("&7"));
+                lore.add(ColorParser.parse("&7点击输入玩家名称并为其添加"));
+                lore.add(ColorParser.parse("&ftrusted &7权限以允许其编辑领地"));
+                lore.add(ColorParser.parse("&7"));
+                lore.add(ColorParser.parse("&e▶ 左键点击 &8| &f添加信任玩家"));
+                addMeta.setLore(lore);
+                addItem.setItemMeta(addMeta);
             }
-            setItem(45, new GUIItem(batchItem) {
+            setItem(4, new GUIItem(addItem) {
                 @Override
                 public void onClick(Player player, ClickType clickType) {
+                    if (!clickType.isLeftClick()) return;
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    if (!batchMode) {
-                        batchMode = true;
-                        batchSelected.clear();
-                        refreshUI();
-                        return;
-                    }
-                    if (clickType.isShiftClick() && clickType.isLeftClick()) {
-                        batchMode = false;
-                        batchSelected.clear();
-                        refreshUI();
-                        return;
-                    }
-                    if (clickType.isRightClick()) {
-                        batchSelected.clear();
-                        refreshUI();
-                        return;
-                    }
-                    if (clickType.isLeftClick()) {
-                        if (batchSelected.isEmpty()) {
-                            batchMode = false;
-                            refreshUI();
-                        } else {
-                            List<UUID> selected = new ArrayList<>(batchSelected);
-                            new ResidencePlayerPermUI(player, residence, previousGUI, selected, 1).openGUI(player);
+                    player.closeInventory();
+                    AnvilNameInput.open(player, "输入玩家名称", "玩家ID", (p, text) -> {
+                        if (text == null || text.trim().isEmpty()) {
+                            new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
+                            return;
                         }
-                    }
+                        if (!ResidenceUtils.canManage(p, residence)) {
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                            new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
+                            return;
+                        }
+                        OfflinePlayer target = Bukkit.getOfflinePlayer(text.trim());
+                        if (target.getUniqueId() == null) {
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                            new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
+                            return;
+                        }
+                        boolean success = ResidenceUtils.setPlayerFlag(p, residence, target.getUniqueId(), "trusted", "true");
+                        if (success) {
+                            PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
+                        } else {
+                            PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        }
+                        new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
+                    });
+                }
+            });
+
+            ItemStack batchItem = new ItemStack(Material.NETHER_STAR);
+            ItemMeta batchMeta = batchItem.getItemMeta();
+            if (batchMeta != null) {
+                batchMeta.setDisplayName(ColorParser.parse("&e&l批量编辑"));
+                List<String> lore = new ArrayList<>();
+                lore.add(ColorParser.parse("&7"));
+                lore.add(ColorParser.parse("&7选择多名玩家进行批量权限编辑"));
+                lore.add(ColorParser.parse("&7以第一名玩家的权限为底板"));
+                lore.add(ColorParser.parse("&7"));
+                lore.add(ColorParser.parse("&e▶ 左键 &8| &f打开批量编辑"));
+                batchMeta.setLore(lore);
+                batchItem.setItemMeta(batchMeta);
+            }
+            setItem(8, new GUIItem(batchItem) {
+                @Override
+                public void onClick(Player player, ClickType clickType) {
+                    if (!clickType.isLeftClick()) return;
+                    PluginConfig.GUI.CLICK_SOUND.playTo(player);
+                    ResidenceBatchSelectUI.open(player, residence, ResidencePlayerPermUI.this);
                 }
             });
         }
-    }
-
-    private void refreshUI() {
-        this.container.clear();
-        this.page = 1;
-        initItems();
-        loadContent();
-        goFirstPage();
     }
 
     public void loadContent() {
@@ -299,105 +297,25 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
     }
 
     private void loadPlayerList() {
-        ItemStack addItem = new ItemStack(Material.EMERALD);
-        ItemMeta addMeta = addItem.getItemMeta();
-        if (addMeta != null) {
-            addMeta.setDisplayName(ColorParser.parse("&a&l添加信任玩家"));
-            List<String> lore = new ArrayList<>();
-            lore.add(ColorParser.parse("&7"));
-            lore.add(ColorParser.parse("&7点击输入玩家名称并为其添加"));
-            lore.add(ColorParser.parse("&ftrusted &7权限以允许其编辑领地"));
-            lore.add(ColorParser.parse("&7"));
-            lore.add(ColorParser.parse("&e▶ 左键点击 &8| &f添加信任玩家"));
-            addMeta.setLore(lore);
-            addItem.setItemMeta(addMeta);
-        }
-        setItem(4, new GUIItem(addItem) {
-            @Override
-            public void onClick(Player player, ClickType clickType) {
-                if (!clickType.isLeftClick()) return;
-                PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                player.closeInventory();
-                AnvilNameInput.open(player, "输入玩家名称", "玩家ID", (p, text) -> {
-                    if (text == null || text.trim().isEmpty()) {
-                        new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
-                        return;
-                    }
-                    if (!ResidenceUtils.canManage(p, residence)) {
-                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
-                        new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
-                        return;
-                    }
-                    OfflinePlayer target = Bukkit.getOfflinePlayer(text.trim());
-                    if (target.getUniqueId() == null) {
-                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
-                        new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
-                        return;
-                    }
-                    boolean success = ResidenceUtils.setPlayerFlag(p, residence, target.getUniqueId(), "trusted", "true");
-                    if (success) {
-                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
-                    } else {
-                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
-                    }
-                    new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
-                });
-            }
-        });
-
         for (ResidencePlayer rp : residence.getTrustedPlayers()) {
             UUID uuid = rp.getUniqueId();
             String playerName = rp.getName() != null ? rp.getName() : "Unknown";
-            boolean isSelected = batchMode && batchSelected.contains(uuid);
 
             ItemStack headItem = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta headMeta = (SkullMeta) headItem.getItemMeta();
             if (headMeta != null) {
                 headMeta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
-                if (isSelected) {
-                    headMeta.setDisplayName(ColorParser.parse("&b&l" + playerName + " &a[已选]"));
-                } else {
-                    headMeta.setDisplayName(ColorParser.parse("&a" + playerName));
-                }
+                headMeta.setDisplayName(ColorParser.parse("&a" + playerName));
                 List<String> lore = new ArrayList<>();
-                if (batchMode) {
-                    if (isSelected) {
-                        lore.add(ColorParser.parse("&a已选中"));
-                        lore.add(ColorParser.parse("&7"));
-                        lore.add(ColorParser.parse("&e▶ 左键 &8| &f取消选择"));
-                    } else {
-                        lore.add(ColorParser.parse("&7"));
-                        lore.add(ColorParser.parse("&e▶ 左键 &8| &f选择该玩家"));
-                    }
-                } else {
-                    lore.add(ColorParser.parse("&7点击编辑该玩家权限"));
-                    lore.add(ColorParser.parse("&c▶ Shift+左键 &8| &f移除该玩家所有权限"));
-                }
+                lore.add(ColorParser.parse("&7点击编辑该玩家权限"));
+                lore.add(ColorParser.parse("&c▶ Shift+左键 &8| &f移除该玩家所有权限"));
                 headMeta.setLore(lore);
-
-                if (isSelected) {
-                    headMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                    headMeta.addEnchant(Enchantment.LURE, 1, true);
-                }
-
                 headItem.setItemMeta(headMeta);
             }
 
             addItem(new GUIItem(headItem) {
                 @Override
                 public void onClick(Player player, ClickType clickType) {
-                    if (batchMode) {
-                        if (!clickType.isLeftClick()) return;
-                        PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                        if (isSelected) {
-                            batchSelected.remove(uuid);
-                        } else {
-                            batchSelected.add(uuid);
-                        }
-                        refreshUI();
-                        return;
-                    }
-
                     if (clickType.isShiftClick() && clickType.isLeftClick()) {
                         PluginConfig.GUI.CLICK_SOUND.playTo(player);
                         if (!ResidenceUtils.canManage(player, residence)) {
