@@ -385,7 +385,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
         boolean canManage = ResidenceUtils.canManage(viewer, residence);
 
         if (canManage) {
-            setItem(30, new GUIItem(buildTransferItem()) {
+            setItem(1, new GUIItem(buildTransferItem()) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     if (!type.isLeftClick()) return;
@@ -409,7 +409,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             });
         }
 
-        setItem(31, new GUIItem(buildSellBuyItem(canManage)) {
+        setItem(2, new GUIItem(buildSellBuyItem(canManage)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -466,7 +466,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(32, new GUIItem(buildRentItem(canManage)) {
+        setItem(3, new GUIItem(buildRentItem(canManage)) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -647,20 +647,31 @@ public class ResidenceManageUI extends AutoPagedGUI {
         }
 
         for (ResidenceRate value : getResidenceData().getRates().values()) {
-            ConfiguredItem item = value.recommend() ? PluginConfig.ICON.RATE.LIKE : PluginConfig.ICON.RATE.DISLIKE;
-            PreparedItem preparedItem = item.prepare(
-                    Optional.ofNullable(value.getAuthorName()).orElse("?"),
-                    PluginConfig.DATETIME_FORMATTER.format(value.time())
-            );
-            preparedItem.setSkullOwner(value.author());
-            preparedItem.insert("comment", GUIUtils.sortContent(value.content()));
+            Material mat = value.recommend() ? Material.LIME_WOOL : Material.RED_WOOL;
+            ItemStack item = new ItemStack(mat);
+            ItemMeta meta = item.getItemMeta();
+            if (meta == null) continue;
+
+            String author = Optional.ofNullable(value.getAuthorName()).orElse("?");
+            String time = PluginConfig.DATETIME_FORMATTER.format(value.time());
+            String comment = value.content();
+            if (comment.length() > 20) comment = comment.substring(0, 17) + "...";
+
+            meta.setDisplayName(ColorParser.parse(value.recommend() ? "&a✔ &f" + author : "&c✘ &f" + author));
+
+            List<String> lore = new ArrayList<>();
+            lore.add(ColorParser.parse("&7" + comment));
+            lore.add(ColorParser.parse("&8" + time));
             if (allowDeletion(getViewer())) {
-                preparedItem.insert("click-lore", CONFIG.ADDITIONAL_LORE.REMOVE);
+                lore.add(ColorParser.parse("&cShift+左键删除"));
             }
-            addItem(new GUIItem(preparedItem.get(getViewer())) {
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+
+            addItem(new GUIItem(item) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
-                    if (allowDeletion(getViewer())) {
+                    if (allowDeletion(clicker) && type.isShiftClick() && type.isLeftClick()) {
                         getResidenceData().removeRate(value.author());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
                         open(getViewer(), residenceData, previousGUI);
