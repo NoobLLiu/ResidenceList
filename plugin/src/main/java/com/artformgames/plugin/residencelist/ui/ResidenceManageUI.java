@@ -52,7 +52,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
     public ResidenceManageUI(@NotNull Player viewer,
                              @NotNull UserListData userData, @NotNull ResidenceData residenceData,
                              @Nullable GUI previousGUI) {
-        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, residenceData.getDisplayName()), 28, 52);
+        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, residenceData.getDisplayName()), 28, 44);
         this.viewer = viewer;
         this.userData = userData;
         this.residenceData = residenceData;
@@ -88,7 +88,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
     }
 
     public void loadIcon() {
-        setItem(11, generateIcon(getPlayerData(), getResidenceData().getResidence()));
+        setItem(10, generateIcon(getPlayerData(), getResidenceData().getResidence()));
     }
 
     public void initItems() {
@@ -103,7 +103,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             });
         }
         Location teleportLocation = getResidenceData().getTeleportLocation(getViewer(), getViewer().getLocation());
-        setItem(13, new GUIItem(CONFIG.ITEMS.TELEPORT.prepare(
+        setItem(12, new GUIItem(CONFIG.ITEMS.TELEPORT.prepare(
                 getResidenceData().getResidence().getMainArea().getWorldName(),
                 teleportLocation.getBlockX(), teleportLocation.getBlockY(), teleportLocation.getBlockZ()
         ).get(getViewer())) {
@@ -119,7 +119,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(14, new GUIItem(CONFIG.ITEMS.INFORMATION.get(getViewer())) {
+        setItem(13, new GUIItem(CONFIG.ITEMS.INFORMATION.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (type.isShiftClick()) {
@@ -181,7 +181,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
 
     public void loadStatus() {
         if (getResidenceData().isPublicDisplayed()) {
-            setItem(15, new GUIItem(CONFIG.ITEMS.PUBLIC.get(getViewer())) {
+            setItem(14, new GUIItem(CONFIG.ITEMS.PUBLIC.get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     getResidenceData().modify(d -> d.setPublicDisplayed(false));
@@ -191,7 +191,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 }
             });
         } else {
-            setItem(15, new GUIItem(CONFIG.ITEMS.PRIVATE.get(getViewer())) {
+            setItem(14, new GUIItem(CONFIG.ITEMS.PRIVATE.get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     getResidenceData().modify(d -> d.setPublicDisplayed(true));
@@ -206,7 +206,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
     public void loadPermissions() {
         ClaimedResidence residence = getResidenceData().getResidence();
 
-        setItem(12, new GUIItem(CONFIG.ITEMS.PERMISSIONS.get(getViewer())) {
+        setItem(11, new GUIItem(CONFIG.ITEMS.PERMISSIONS.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -267,7 +267,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
     public void loadAdvanced() {
         ClaimedResidence residence = getResidenceData().getResidence();
 
-        setItem(21, new GUIItem(CONFIG.ITEMS.RENAME.get(getViewer())) {
+        setItem(18, new GUIItem(CONFIG.ITEMS.RENAME.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -295,7 +295,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(22, new GUIItem(CONFIG.ITEMS.RESET_PERMISSIONS.get(getViewer())) {
+        setItem(19, new GUIItem(CONFIG.ITEMS.RESET_PERMISSIONS.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isShiftClick() || !type.isLeftClick()) return;
@@ -310,7 +310,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(23, new GUIItem(CONFIG.ITEMS.MIRROR_PERMISSIONS.get(getViewer())) {
+        setItem(20, new GUIItem(CONFIG.ITEMS.MIRROR_PERMISSIONS.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -339,7 +339,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(24, new GUIItem(CONFIG.ITEMS.ENTER_MESSAGE.get(getViewer())) {
+        setItem(21, new GUIItem(CONFIG.ITEMS.ENTER_MESSAGE.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -359,7 +359,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(25, new GUIItem(CONFIG.ITEMS.LEAVE_MESSAGE.get(getViewer())) {
+        setItem(22, new GUIItem(CONFIG.ITEMS.LEAVE_MESSAGE.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (!type.isLeftClick()) return;
@@ -647,31 +647,20 @@ public class ResidenceManageUI extends AutoPagedGUI {
         }
 
         for (ResidenceRate value : getResidenceData().getRates().values()) {
-            Material mat = value.recommend() ? Material.LIME_WOOL : Material.RED_WOOL;
-            ItemStack item = new ItemStack(mat);
-            ItemMeta meta = item.getItemMeta();
-            if (meta == null) continue;
-
-            String author = Optional.ofNullable(value.getAuthorName()).orElse("?");
-            String time = PluginConfig.DATETIME_FORMATTER.format(value.time());
-            String comment = value.content();
-            if (comment.length() > 20) comment = comment.substring(0, 17) + "...";
-
-            meta.setDisplayName(ColorParser.parse(value.recommend() ? "&a✔ &f" + author : "&c✘ &f" + author));
-
-            List<String> lore = new ArrayList<>();
-            lore.add(ColorParser.parse("&7" + comment));
-            lore.add(ColorParser.parse("&8" + time));
+            ConfiguredItem item = value.recommend() ? PluginConfig.ICON.RATE.LIKE : PluginConfig.ICON.RATE.DISLIKE;
+            PreparedItem preparedItem = item.prepare(
+                    Optional.ofNullable(value.getAuthorName()).orElse("?"),
+                    PluginConfig.DATETIME_FORMATTER.format(value.time())
+            );
+            preparedItem.setSkullOwner(value.author());
+            preparedItem.insert("comment", GUIUtils.sortContent(value.content()));
             if (allowDeletion(getViewer())) {
-                lore.add(ColorParser.parse("&cShift+左键删除"));
+                preparedItem.insert("click-lore", CONFIG.ADDITIONAL_LORE.REMOVE);
             }
-            meta.setLore(lore);
-            item.setItemMeta(meta);
-
-            addItem(new GUIItem(item) {
+            addItem(new GUIItem(preparedItem.get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
-                    if (allowDeletion(clicker) && type.isShiftClick() && type.isLeftClick()) {
+                    if (allowDeletion(getViewer())) {
                         getResidenceData().removeRate(value.author());
                         PluginMessages.EDIT.SUCCESS_SOUND.playTo(clicker);
                         open(getViewer(), residenceData, previousGUI);
