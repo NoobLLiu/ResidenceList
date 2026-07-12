@@ -52,7 +52,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
     public ResidenceManageUI(@NotNull Player viewer,
                              @NotNull UserListData userData, @NotNull ResidenceData residenceData,
                              @Nullable GUI previousGUI) {
-        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, residenceData.getDisplayName()), 27, 44);
+        super(GUIType.SIX_BY_NINE, CONFIG.TITLE.parseLine(viewer, residenceData.getDisplayName()), 18, 35);
         this.viewer = viewer;
         this.userData = userData;
         this.residenceData = residenceData;
@@ -88,7 +88,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
     }
 
     public void loadIcon() {
-        setItem(1, generateIcon(getPlayerData(), getResidenceData().getResidence()));
+        setItem(4, generateIcon(getPlayerData(), getResidenceData().getResidence()));
     }
 
     public void initItems() {
@@ -103,7 +103,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             });
         }
         Location teleportLocation = getResidenceData().getTeleportLocation(getViewer(), getViewer().getLocation());
-        setItem(4, new GUIItem(CONFIG.ITEMS.TELEPORT.prepare(
+        setItem(3, new GUIItem(CONFIG.ITEMS.TELEPORT.prepare(
                 getResidenceData().getResidence().getMainArea().getWorldName(),
                 teleportLocation.getBlockX(), teleportLocation.getBlockY(), teleportLocation.getBlockZ()
         ).get(getViewer())) {
@@ -119,7 +119,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
             }
         });
 
-        setItem(2, new GUIItem(CONFIG.ITEMS.INFORMATION.get(getViewer())) {
+        setItem(1, new GUIItem(CONFIG.ITEMS.INFORMATION.get(getViewer())) {
             @Override
             public void onClick(Player clicker, ClickType type) {
                 if (type.isShiftClick()) {
@@ -179,7 +179,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
 
     public void loadStatus() {
         if (getResidenceData().isPublicDisplayed()) {
-            setItem(3, new GUIItem(CONFIG.ITEMS.PUBLIC.get(getViewer())) {
+            setItem(2, new GUIItem(CONFIG.ITEMS.PUBLIC.get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     getResidenceData().modify(d -> d.setPublicDisplayed(false));
@@ -189,7 +189,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                 }
             });
         } else {
-            setItem(3, new GUIItem(CONFIG.ITEMS.PRIVATE.get(getViewer())) {
+            setItem(2, new GUIItem(CONFIG.ITEMS.PRIVATE.get(getViewer())) {
                 @Override
                 public void onClick(Player clicker, ClickType type) {
                     getResidenceData().modify(d -> d.setPublicDisplayed(true));
@@ -640,7 +640,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
 
     public void loadRates() {
         if (getResidenceData().getRates().isEmpty()) {
-            setItem(35, new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
+            setItem(40, new GUIItem(CONFIG.ITEMS.EMPTY.get(getViewer())));
             return;
         }
 
