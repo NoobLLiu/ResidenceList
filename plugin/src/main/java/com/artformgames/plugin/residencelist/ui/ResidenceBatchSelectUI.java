@@ -82,12 +82,16 @@ public class ResidenceBatchSelectUI extends AutoPagedGUI {
         ItemMeta batchMeta = batchItem.getItemMeta();
         if (batchMeta != null) {
             if (count > 0) {
-                batchMeta.setDisplayName(ColorParser.parse("&a&l确认选择（" + count + "）"));
+                batchMeta.setDisplayName(ColorParser.parse("&a&l已选玩家列表（" + count + "）"));
                 List<String> lore = new ArrayList<>();
                 lore.add(ColorParser.parse("&7"));
-                lore.add(ColorParser.parse("&7已选择 &f" + count + " &7名玩家"));
+                lore.add(ColorParser.parse("&7已选择 &f" + count + " &7名玩家："));
+                for (UUID uuid : selected) {
+                    String name = Bukkit.getOfflinePlayer(uuid).getName();
+                    lore.add(ColorParser.parse(" &8- &f" + (name != null ? name : uuid.toString().substring(0, 8))));
+                }
                 lore.add(ColorParser.parse("&7"));
-                lore.add(ColorParser.parse("&e▶ 左键点击 &8| &f开始批量编辑"));
+                lore.add(ColorParser.parse("&e▶ 左键点击 &8| &f进入批量编辑权限页面"));
                 batchMeta.setLore(lore);
             } else {
                 batchMeta.setDisplayName(ColorParser.parse("&c&l未选择玩家"));
@@ -150,9 +154,9 @@ public class ResidenceBatchSelectUI extends AutoPagedGUI {
         if (headMeta != null) {
             headMeta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
             if (isSelected) {
-                headMeta.setDisplayName(ColorParser.parse("&a✓ &f" + displayName));
+                headMeta.setDisplayName(ColorParser.parse("&a[ ✓ ] &f" + displayName));
             } else {
-                headMeta.setDisplayName(ColorParser.parse("&f" + displayName));
+                headMeta.setDisplayName(ColorParser.parse("&7[   ] &f" + displayName));
             }
 
             List<String> lore = new ArrayList<>();
@@ -166,13 +170,13 @@ public class ResidenceBatchSelectUI extends AutoPagedGUI {
                 lore.add(ColorParser.parse("&e▶ 左键 &8| &f选择该玩家"));
             }
             headMeta.setLore(lore);
-
-            if (isSelected) {
-                headMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                headMeta.addEnchant(Enchantment.LURE, 1, true);
-            }
+            headMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
             headItem.setItemMeta(headMeta);
+
+            if (isSelected) {
+                headItem.addUnsafeEnchantment(Enchantment.LURE, 1);
+            }
         }
 
         return new GUIItem(headItem) {
