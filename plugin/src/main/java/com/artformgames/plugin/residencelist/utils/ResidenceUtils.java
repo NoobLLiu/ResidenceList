@@ -221,6 +221,15 @@ public class ResidenceUtils {
         return Residence.getInstance().getConfigManager().enabledRentSystem();
     }
 
+    public static boolean isFlagVisible(@NotNull Flags flag, @NotNull Player player) {
+        if (!flag.isGlobalyEnabled()) return false;
+        boolean resadmin = isResAdmin(player);
+        if (!flag.isEnabled() && !resadmin
+                && !player.hasPermission("residence.flag." + flag.name().toLowerCase()))
+            return false;
+        return true;
+    }
+
     public static @NotNull List<Flags> getGlobalFlags() {
         List<Flags> list = new ArrayList<>();
         for (Flags f : Flags.values()) {

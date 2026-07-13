@@ -255,7 +255,7 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
                         }
                         new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
                     };
-                    new PlayerSelectModeUI(player, "输入玩家名称", "玩家ID",
+                    new OnlinePlayerSelectUI(player, "输入玩家名称", "玩家ID",
                             selectCallback, ResidencePlayerPermUI.this).openGUI(player);
                 }
             });
@@ -342,9 +342,7 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
 
     private void loadFlagList() {
         for (ResidenceFlagCategory cat : ResidenceFlagCategory.all()) {
-            List<Flags> flags = cat.getPlayerFlags();
-            if (flags.isEmpty()) continue;
-            for (Flags flag : flags) {
+            for (Flags flag : cat.getVisiblePlayerFlags(viewer)) {
                 addItem(createFlagItem(flag));
             }
         }

@@ -76,7 +76,7 @@ public class PlayerSelectModeUI extends GUI {
             public void onClick(Player player, ClickType clickType) {
                 if (!clickType.isLeftClick()) return;
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                new OnlinePlayerSelectUI(player, callback, PlayerSelectModeUI.this).openGUI(player);
+                new OnlinePlayerSelectUI(player, anvilTitle, anvilPlaceholder, callback, PlayerSelectModeUI.this).openGUI(player);
             }
         });
 

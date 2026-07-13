@@ -9,6 +9,7 @@ import com.artformgames.plugin.residencelist.conf.PluginConfig;
 import com.artformgames.plugin.residencelist.conf.PluginMessages;
 import com.artformgames.plugin.residencelist.utils.ResidenceFlagCategory;
 import com.artformgames.plugin.residencelist.utils.ResidenceUtils;
+import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import org.bukkit.Material;
@@ -98,6 +99,31 @@ public class ResidenceFlagUI extends AutoPagedGUI {
                 }
             }
         });
+
+        if (category == null) {
+            ItemStack advancedItem = new ItemStack(Material.COMMAND_BLOCK);
+            ItemMeta advancedMeta = advancedItem.getItemMeta();
+            if (advancedMeta != null) {
+                advancedMeta.setDisplayName(ColorParser.parse("&d&l高级版编辑"));
+                List<String> lore = new ArrayList<>();
+                lore.add(ColorParser.parse("&7"));
+                lore.add(ColorParser.parse("&7使用Residence自带GUI编辑全部权限"));
+                lore.add(ColorParser.parse("&7"));
+                lore.add(ColorParser.parse("&e▶ 左键 &8| &f打开高级版编辑"));
+                advancedMeta.setLore(lore);
+                advancedItem.setItemMeta(advancedMeta);
+            }
+            setItem(45, new GUIItem(advancedItem) {
+                @Override
+                public void onClick(Player player, ClickType clickType) {
+                    if (!clickType.isLeftClick()) return;
+                    PluginConfig.GUI.CLICK_SOUND.playTo(player);
+                    player.closeInventory();
+                    Residence.getInstance().getFlagUtilManager()
+                            .openSetFlagGui(player, residence, ResidenceUtils.isResAdmin(player), 1);
+                }
+            });
+        }
     }
 
     public void loadContent() {
@@ -114,13 +140,13 @@ public class ResidenceFlagUI extends AutoPagedGUI {
 
     private void loadCategories() {
         for (ResidenceFlagCategory cat : ResidenceFlagCategory.all()) {
-            if (cat.getGlobalFlags().isEmpty()) continue;
+            if (cat.getVisibleGlobalFlags(viewer).isEmpty()) continue;
             addItem(createCategoryItem(cat));
         }
     }
 
     private void loadFlags() {
-        for (Flags flag : category.getGlobalFlags()) {
+        for (Flags flag : category.getVisibleGlobalFlags(viewer)) {
             addItem(createFlagItem(flag));
         }
     }

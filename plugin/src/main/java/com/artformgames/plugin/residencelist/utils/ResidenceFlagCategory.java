@@ -1,6 +1,7 @@
 package com.artformgames.plugin.residencelist.utils;
 
 import com.bekvon.bukkit.residence.containers.Flags;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -110,6 +111,16 @@ public enum ResidenceFlagCategory {
         return result;
     }
 
+    public @NotNull List<Flags> getVisibleGlobalFlags(@NotNull Player player) {
+        List<Flags> result = new ArrayList<>();
+        for (Flags flag : getGlobalFlags()) {
+            if (ResidenceUtils.isFlagVisible(flag, player)) {
+                result.add(flag);
+            }
+        }
+        return result;
+    }
+
     /**
      * 获取可用于个人设置（/res pset）的 flag：FlagMode 为 Player 或 Both。
      */
@@ -117,6 +128,16 @@ public enum ResidenceFlagCategory {
         List<Flags> result = new ArrayList<>();
         for (Flags flag : getFlags()) {
             if (flag.getFlagMode() != Flags.FlagMode.Residence) {
+                result.add(flag);
+            }
+        }
+        return result;
+    }
+
+    public @NotNull List<Flags> getVisiblePlayerFlags(@NotNull Player player) {
+        List<Flags> result = new ArrayList<>();
+        for (Flags flag : getPlayerFlags()) {
+            if (ResidenceUtils.isFlagVisible(flag, player)) {
                 result.add(flag);
             }
         }

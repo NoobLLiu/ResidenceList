@@ -95,25 +95,40 @@ public class BedrockPermissionUI {
      * 全局权限分类列表。
      */
     private static void sendGlobalFlagCategoryList(Player player, ResidenceData residenceData, String ownerFilter) {
+        ClaimedResidence residence = residenceData.getResidence();
+
+        List<ResidenceFlagCategory> visibleCategories = new ArrayList<>();
+        for (ResidenceFlagCategory category : ResidenceFlagCategory.all()) {
+            if (!category.getVisibleGlobalFlags(player).isEmpty()) {
+                visibleCategories.add(category);
+            }
+        }
+
         SimpleForm.Builder form = SimpleForm.builder()
                 .title("§e【领地系统-全局权限分类】");
 
         form.content("§f点击分类以编辑对应的全局权限开关。");
 
-        for (ResidenceFlagCategory category : ResidenceFlagCategory.all()) {
+        for (ResidenceFlagCategory category : visibleCategories) {
             form.button("§0" + category.getDisplayName(), FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
+        form.button("§d高级版编辑（Residence自带）", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
 
-        final int backIndex = ResidenceFlagCategory.all().size();
+        final int advancedIndex = visibleCategories.size();
+        final int backIndex = advancedIndex + 1;
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
             BedrockFormUtil.runSync(() -> {
                 PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                if (clicked >= 0 && clicked < backIndex) {
+                if (clicked >= 0 && clicked < advancedIndex) {
                     sendGlobalFlagCategoryForm(player, residenceData,
-                            ResidenceFlagCategory.all().get(clicked), ownerFilter);
+                            visibleCategories.get(clicked), ownerFilter);
+                } else if (clicked == advancedIndex) {
+                    player.closeInventory();
+                    com.bekvon.bukkit.residence.Residence.getInstance().getFlagUtilManager()
+                            .openSetFlagGui(player, residence, ResidenceUtils.isResAdmin(player), 1);
                 } else if (clicked == backIndex) {
                     sendPermissionMenu(player, residenceData, ownerFilter);
                 }
@@ -132,7 +147,7 @@ public class BedrockPermissionUI {
     private static void sendGlobalFlagCategoryForm(Player player, ResidenceData residenceData,
                                                    ResidenceFlagCategory category, String ownerFilter) {
         ClaimedResidence residence = residenceData.getResidence();
-        List<Flags> flags = category.getGlobalFlags();
+        List<Flags> flags = category.getVisibleGlobalFlags(player);
 
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【全局权限-" + category.getDisplayName() + "】");
@@ -321,7 +336,7 @@ public class BedrockPermissionUI {
         }
         if (namesBuilder.length() > 2) namesBuilder.setLength(namesBuilder.length() - 2);
 
-        List<Flags> flags = category.getPlayerFlags();
+        List<Flags> flags = category.getVisiblePlayerFlags(player);
 
         CustomForm.Builder form = CustomForm.builder()
                 .title("§e【玩家权限-" + category.getDisplayName() + "】");

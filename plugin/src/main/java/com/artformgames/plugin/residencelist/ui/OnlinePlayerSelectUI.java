@@ -6,6 +6,7 @@ import cc.carm.lib.easyplugin.gui.GUIType;
 import cc.carm.lib.easyplugin.gui.paged.AutoPagedGUI;
 import cc.carm.lib.easyplugin.utils.ColorParser;
 import com.artformgames.plugin.residencelist.conf.PluginConfig;
+import com.artformgames.plugin.residencelist.listener.AnvilNameInput;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -25,14 +26,20 @@ public class OnlinePlayerSelectUI extends AutoPagedGUI {
     protected final @NotNull Player viewer;
     protected final @NotNull BiConsumer<Player, String> callback;
     protected final @Nullable GUI previousGUI;
+    protected final @NotNull String anvilTitle;
+    protected final @NotNull String anvilPlaceholder;
 
     public OnlinePlayerSelectUI(@NotNull Player viewer,
+                                 @NotNull String anvilTitle,
+                                 @NotNull String anvilPlaceholder,
                                  @NotNull BiConsumer<Player, String> callback,
                                  @Nullable GUI previousGUI) {
         super(GUIType.SIX_BY_NINE,
                 ColorParser.parse("&a&l在线玩家列表 &7(" + countOnline(viewer) + ")"),
                 10, 52);
         this.viewer = viewer;
+        this.anvilTitle = anvilTitle;
+        this.anvilPlaceholder = anvilPlaceholder;
         this.callback = callback;
         this.previousGUI = previousGUI;
 
@@ -91,6 +98,29 @@ public class OnlinePlayerSelectUI extends AutoPagedGUI {
                 if (previousGUI != null) {
                     previousGUI.openGUI(player);
                 }
+            }
+        });
+
+        ItemStack inputItem = new ItemStack(Material.NAME_TAG);
+        ItemMeta inputMeta = inputItem.getItemMeta();
+        if (inputMeta != null) {
+            inputMeta.setDisplayName(ColorParser.parse("&e&l输入玩家ID"));
+            List<String> lore = new ArrayList<>();
+            lore.add(ColorParser.parse("&7"));
+            lore.add(ColorParser.parse("&7手动输入玩家名称"));
+            lore.add(ColorParser.parse("&7支持选择离线玩家"));
+            lore.add(ColorParser.parse("&7"));
+            lore.add(ColorParser.parse("&e▶ 左键 &8| &f输入玩家名称"));
+            inputMeta.setLore(lore);
+            inputItem.setItemMeta(inputMeta);
+        }
+        setItem(45, new GUIItem(inputItem) {
+            @Override
+            public void onClick(Player player, ClickType clickType) {
+                if (!clickType.isLeftClick()) return;
+                PluginConfig.GUI.CLICK_SOUND.playTo(player);
+                player.closeInventory();
+                AnvilNameInput.open(player, anvilTitle, anvilPlaceholder, callback);
             }
         });
     }

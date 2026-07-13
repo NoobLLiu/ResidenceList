@@ -375,7 +375,7 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             open(player, getResidenceData(), previousGUI);
                         }
                     };
-                    new PlayerSelectModeUI(clicker, "输入目标玩家名称（保留权限）", "目标玩家名称",
+                    new OnlinePlayerSelectUI(clicker, "输入目标玩家名称（保留权限）", "目标玩家名称",
                             transferCallback, ResidenceManageUI.this).openGUI(clicker);
                 }
             });
