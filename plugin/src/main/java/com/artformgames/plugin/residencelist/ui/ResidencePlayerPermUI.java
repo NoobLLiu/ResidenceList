@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 public class ResidencePlayerPermUI extends AutoPagedGUI {
 
@@ -230,9 +231,8 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
                 public void onClick(Player player, ClickType clickType) {
                     if (!clickType.isLeftClick()) return;
                     PluginConfig.GUI.CLICK_SOUND.playTo(player);
-                    player.closeInventory();
-                    AnvilNameInput.open(player, "输入玩家名称", "玩家ID", (p, text) -> {
-                        if (text == null || text.trim().isEmpty()) {
+                    BiConsumer<Player, String> selectCallback = (p, name) -> {
+                        if (name == null || name.trim().isEmpty()) {
                             new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
                             return;
                         }
@@ -241,7 +241,7 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
                             new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
                             return;
                         }
-                        OfflinePlayer target = Bukkit.getOfflinePlayer(text.trim());
+                        OfflinePlayer target = Bukkit.getOfflinePlayer(name.trim());
                         if (target.getUniqueId() == null) {
                             PluginMessages.EDIT.FAILED_SOUND.playTo(p);
                             new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
@@ -254,7 +254,9 @@ public class ResidencePlayerPermUI extends AutoPagedGUI {
                             PluginMessages.EDIT.FAILED_SOUND.playTo(p);
                         }
                         new ResidencePlayerPermUI(p, residence, previousGUI, null).openGUI(p);
-                    });
+                    };
+                    new PlayerSelectModeUI(player, "输入玩家名称", "玩家ID",
+                            selectCallback, ResidencePlayerPermUI.this).openGUI(player);
                 }
             });
 

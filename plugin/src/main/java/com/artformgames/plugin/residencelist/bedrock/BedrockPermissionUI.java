@@ -223,33 +223,23 @@ public class BedrockPermissionUI {
     private static void sendAddTrustedPlayerForm(Player player, ResidenceData residenceData, String ownerFilter) {
         ClaimedResidence residence = residenceData.getResidence();
 
-        CustomForm.Builder form = CustomForm.builder()
-                .title("§e【领地系统-添加信任玩家】");
-
-        form.input("输入要添加为信任玩家的玩家名称", "玩家ID...", "");
-
-        form.validResultHandler(response -> {
-            String name = response.asInput(0);
-            BedrockFormUtil.runSync(() -> {
-                if (name == null || name.isBlank()) {
-                    sendPlayerPermissionMenu(player, residenceData, ownerFilter);
-                    return;
-                }
-                OfflinePlayer target = Bukkit.getOfflinePlayer(name.trim());
-                boolean success = ResidenceUtils.setPlayerFlag(player, residence, target.getUniqueId(), "trusted", "true");
-                if (success) {
-                    PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
-                } else {
-                    PluginMessages.EDIT.FAILED_SOUND.playTo(player);
-                }
-                sendPlayerPermissionMenu(player, residenceData, ownerFilter);
-            });
-        });
-
-        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
-                sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
-
-        BedrockFormUtil.sendForm(player, form);
+        BedrockPlayerSelectUI.open(player, "领地系统-添加信任玩家", "玩家ID...",
+                (p, name) -> {
+                    if (name == null || name.isBlank()) {
+                        sendPlayerPermissionMenu(p, residenceData, ownerFilter);
+                        return;
+                    }
+                    OfflinePlayer target = Bukkit.getOfflinePlayer(name.trim());
+                    boolean success = ResidenceUtils.setPlayerFlag(p, residence, target.getUniqueId(), "trusted", "true");
+                    if (success) {
+                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
+                    } else {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                    }
+                    sendPlayerPermissionMenu(p, residenceData, ownerFilter);
+                },
+                () -> sendPlayerPermissionMenu(player, residenceData, ownerFilter)
+        );
     }
 
     /**

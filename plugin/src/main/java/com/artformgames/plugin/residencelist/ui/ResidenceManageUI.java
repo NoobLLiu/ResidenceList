@@ -361,12 +361,12 @@ public class ResidenceManageUI extends AutoPagedGUI {
                     if (!type.isLeftClick()) return;
                     PluginConfig.GUI.CLICK_SOUND.playTo(clicker);
                     clicker.closeInventory();
-                    AnvilNameInput.open(clicker, "输入目标玩家名称（保留权限）", "目标玩家名称", (player, text) -> {
-                        if (text == null || text.trim().isEmpty()) {
+                    java.util.function.BiConsumer<Player, String> transferCallback = (player, name) -> {
+                        if (name == null || name.trim().isEmpty()) {
                             ResidenceListUI.open(player, null);
                             return;
                         }
-                        boolean success = ResidenceUtils.transferResidence(player, residence, text.trim());
+                        boolean success = ResidenceUtils.transferResidence(player, residence, name.trim());
                         if (success) {
                             PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
                             ResidenceListUI.open(player, null);
@@ -374,7 +374,9 @@ public class ResidenceManageUI extends AutoPagedGUI {
                             PluginMessages.EDIT.FAILED_SOUND.playTo(player);
                             open(player, getResidenceData(), previousGUI);
                         }
-                    });
+                    };
+                    new PlayerSelectModeUI(clicker, "输入目标玩家名称（保留权限）", "目标玩家名称",
+                            transferCallback, ResidenceManageUI.this).openGUI(clicker);
                 }
             });
         }

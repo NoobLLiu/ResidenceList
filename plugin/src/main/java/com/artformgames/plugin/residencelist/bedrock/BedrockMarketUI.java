@@ -74,40 +74,23 @@ public class BedrockMarketUI {
     private static void sendTransferForm(Player player, ResidenceData residenceData, String ownerFilter) {
         ClaimedResidence residence = residenceData.getResidence();
 
-        CustomForm.Builder form = CustomForm.builder()
-                .title("§e【领地系统-转让领地】");
-
-        form.label("§f请输入目标玩家名称：\n§7转让后保留原有权限设置。");
-        form.input("目标玩家名称", "玩家ID...", "");
-        form.stepSlider("操作", 0, "确认转让", "取消");
-
-        form.validResultHandler(response -> {
-            int action = response.asStepSlider(2);
-            String targetName = response.asInput(1);
-            BedrockFormUtil.runSync(() -> {
-                if (action == 0) {
-                    if (targetName == null || targetName.isBlank()) {
-                        PluginMessages.EDIT.FAILED_SOUND.playTo(player);
-                        BedrockResidenceManageUI.open(player, residenceData, ownerFilter);
+        BedrockPlayerSelectUI.open(player, "领地系统-转让领地", "目标玩家名称",
+                (p, name) -> {
+                    if (name == null || name.isBlank()) {
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
+                        BedrockResidenceManageUI.open(p, residenceData, ownerFilter);
                         return;
                     }
-                    boolean success = ResidenceUtils.transferResidence(player, residence, targetName.trim());
+                    boolean success = ResidenceUtils.transferResidence(p, residence, name.trim());
                     if (success) {
-                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(player);
+                        PluginMessages.EDIT.SUCCESS_SOUND.playTo(p);
                     } else {
-                        PluginMessages.EDIT.FAILED_SOUND.playTo(player);
+                        PluginMessages.EDIT.FAILED_SOUND.playTo(p);
                     }
-                    BedrockResidenceManageUI.open(player, residenceData, ownerFilter);
-                } else {
-                    BedrockResidenceManageUI.open(player, residenceData, ownerFilter);
-                }
-            });
-        });
-
-        form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
-                sendTransferMenu(player, residenceData, ownerFilter)));
-
-        BedrockFormUtil.sendForm(player, form);
+                    BedrockResidenceManageUI.open(p, residenceData, ownerFilter);
+                },
+                () -> sendTransferMenu(player, residenceData, ownerFilter)
+        );
     }
 
     // ======================== Sell / Buy ========================
