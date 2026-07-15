@@ -65,7 +65,7 @@ public class BedrockPermissionUI {
         form.button("§0镜像权限", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0进出提示消息", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0重置全部权限", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回管理页", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回管理页", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -113,7 +113,7 @@ public class BedrockPermissionUI {
             form.button("§0" + category.getDisplayName(), FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
         form.button("§d高级版编辑（Residence自带）", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         final int advancedIndex = visibleCategories.size();
         final int backIndex = advancedIndex + 1;
@@ -211,7 +211,7 @@ public class BedrockPermissionUI {
         form.button("§a添加信任玩家", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§b编辑信任玩家", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§c移除信任玩家", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -287,7 +287,7 @@ public class BedrockPermissionUI {
         for (ResidenceFlagCategory category : ResidenceFlagCategory.all()) {
             form.button("§0" + category.getDisplayName(), FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         final int backIndex = ResidenceFlagCategory.all().size();
 
@@ -407,7 +407,7 @@ public class BedrockPermissionUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§e【领地系统-编辑信任玩家】")
                     .content("§f当前没有信任玩家。")
-                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
             form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
@@ -450,7 +450,7 @@ public class BedrockPermissionUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§e【领地系统-移除信任玩家】")
                     .content("§f当前没有信任玩家可以移除。")
-                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendPlayerPermissionMenu(player, residenceData, ownerFilter)));
             form.closedResultHandler(() -> BedrockFormUtil.runSync(() ->
@@ -582,7 +582,7 @@ public class BedrockPermissionUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§e【领地系统-镜像权限】")
                     .content("§f主人名下没有其他可用于镜像权限的领地。")
-                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendPermissionMenu(player, residenceData, ownerFilter)));
@@ -605,7 +605,7 @@ public class BedrockPermissionUI {
             String name = BedrockFormUtil.stripColor(sourceData.getDisplayName());
             form.button("§0" + name + "\n§1" + source.getName(), FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         final int backIndex = sources.size();
 

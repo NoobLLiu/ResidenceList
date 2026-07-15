@@ -19,8 +19,13 @@ public final class BedrockFormUtil {
 
     /** 占位图标路径（基岩版内置的草方块纹理） */
     public static final String BUTTON_ICON = "textures/blocks/grass_side_carried";
+    private static final String MENU_ICON_PREFIX = "textures/menu_1/";
 
     private BedrockFormUtil() {
+    }
+
+    public static String menuIcon(String name) {
+        return MENU_ICON_PREFIX + name + ".png";
     }
 
     /**

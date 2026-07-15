@@ -74,18 +74,18 @@ public class BedrockResidenceManageUI {
         form.content(content.toString());
 
         // 功能按钮
-        form.button("§0编辑昵称", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0编辑描述", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0编辑图标", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button(residenceData.isPublicDisplayed() ? "§0切换为私有" : "§0切换为公开", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0传送到领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0设置传送点", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0管理评价 §f(" + residenceData.getRates().size() + ")", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0转让领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0出售领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0租借领地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0权限管理", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回领地列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0编辑昵称", FormImage.Type.PATH, BedrockFormUtil.menuIcon("liuyanban"));
+        form.button("§0编辑描述", FormImage.Type.PATH, BedrockFormUtil.menuIcon("guanligonggao"));
+        form.button("§0编辑图标", FormImage.Type.PATH, BedrockFormUtil.menuIcon("tubiao"));
+        form.button(residenceData.isPublicDisplayed() ? "§0切换为私有" : "§0切换为公开", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lock"));
+        form.button("§0传送到领地", FormImage.Type.PATH, BedrockFormUtil.menuIcon("gotohome"));
+        form.button("§0设置传送点", FormImage.Type.PATH, BedrockFormUtil.menuIcon("addtmhome"));
+        form.button("§0管理评价 §f(" + residenceData.getRates().size() + ")", FormImage.Type.PATH, BedrockFormUtil.menuIcon("guanligonggao"));
+        form.button("§0转让领地", FormImage.Type.PATH, BedrockFormUtil.menuIcon("tmtp"));
+        form.button("§0出售领地", FormImage.Type.PATH, BedrockFormUtil.menuIcon("tmmoney"));
+        form.button("§0租借领地", FormImage.Type.PATH, BedrockFormUtil.menuIcon("cleanpack"));
+        form.button("§0权限管理", FormImage.Type.PATH, BedrockFormUtil.menuIcon("guanliplayer"));
+        form.button("§0返回领地列表", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -292,7 +292,7 @@ public class BedrockResidenceManageUI {
             SimpleForm.Builder form = SimpleForm.builder()
                     .title("§e【领地系统-管理评价】")
                     .content("§f目前暂无评价。")
-                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+                    .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
             form.validResultHandler(response ->
                     BedrockFormUtil.runSync(() -> sendManageMenu(player, residenceData, ownerFilter)));
@@ -326,7 +326,7 @@ public class BedrockResidenceManageUI {
             if (allowDelete) btnText += " §c[点击删除]";
             form.button(btnText, FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         final boolean finalAllowDelete = allowDelete;
         form.validResultHandler(response -> {

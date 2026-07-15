@@ -51,7 +51,7 @@ public class BedrockMarketUI {
                 + "§7转让后保留原有权限设置。");
 
         form.button("§a确认转让", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -127,7 +127,7 @@ public class BedrockMarketUI {
         SimpleForm.Builder form = SimpleForm.builder()
                 .title("§e【领地系统-出售领地】")
                 .content("§c经济系统未启用，无法出售领地。")
-                .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+                .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() ->
@@ -200,7 +200,7 @@ public class BedrockMarketUI {
                 + "§f状态：正在出售中");
 
         form.button("§c取消出售", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -236,7 +236,7 @@ public class BedrockMarketUI {
                 + "§f出售价格：" + price + " 金币");
 
         form.button("§a确认购买", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -300,7 +300,7 @@ public class BedrockMarketUI {
         SimpleForm.Builder form = SimpleForm.builder()
                 .title("§e【领地系统-出租领地】")
                 .content("§c租借系统未启用，无法出租领地。")
-                .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+                .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() ->
@@ -386,7 +386,7 @@ public class BedrockMarketUI {
                 + "§f状态：等待租客");
 
         form.button("§c取消出租", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -425,7 +425,7 @@ public class BedrockMarketUI {
                 + "§f租金：" + cost + "/天");
 
         form.button("§c强制退租", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -463,7 +463,7 @@ public class BedrockMarketUI {
                 + "§f租期：" + days + "天");
 
         form.button("§a确认租用", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -527,7 +527,7 @@ public class BedrockMarketUI {
                     FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         }
 
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         final int backIndex = entries.size();
 
@@ -567,7 +567,7 @@ public class BedrockMarketUI {
                 + "§f出售价格：" + price + " 金币");
 
         form.button("§a确认购买", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -606,7 +606,7 @@ public class BedrockMarketUI {
                 + "§f租期：" + days + "天");
 
         form.button("§a确认租用", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();

@@ -101,15 +101,15 @@ public class BedrockCreateResidenceUI {
         int btnIndex = 0;
 
         // 0: 开/关自动选区模式（点击后直接关闭表单，让玩家走动操作）
-        form.button(autoEnabled ? "§0关闭自动选区模式" : "§0开启自动选区模式", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button(autoEnabled ? "§0关闭自动选区模式" : "§0开启自动选区模式", FormImage.Type.PATH, BedrockFormUtil.menuIcon("xuanqu"));
         final int btnAuto = btnIndex++;
 
         // 1: 返回上级菜单（退出自动圈地模式，返回主菜单）
-        form.button("§0返回上级菜单", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回上级菜单", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
         final int btnBack = btnIndex++;
 
         // 2: 关闭表单并开始圈地（保持自动圈地模式，关闭表单让玩家走动）
-        form.button("§0关闭表单并开始圈地", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0关闭表单并开始圈地", FormImage.Type.PATH, BedrockFormUtil.menuIcon("jiesan"));
         final int btnStartSelecting = btnIndex++;
 
         // Y轴扩展按钮（仅有选区时显示）

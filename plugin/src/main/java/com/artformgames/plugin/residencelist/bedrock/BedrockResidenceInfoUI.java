@@ -83,7 +83,7 @@ public class BedrockResidenceInfoUI {
         form.button("§0评分评价", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0查看所有评价 §f(" + residenceData.getRates().size() + ")", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§0查看成员列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回领地列表", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回领地列表", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         final boolean hasTeleport = tpLoc != null && residenceData.canTeleport(player);
         final int btnRate = hasTeleport ? 1 : 0;
@@ -190,7 +190,7 @@ public class BedrockResidenceInfoUI {
             }
         }
         form.content(content.toString());
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() -> sendMainMenu(player, residenceData, ownerFilter)));
@@ -224,7 +224,7 @@ public class BedrockResidenceInfoUI {
         }
 
         form.content(content.toString());
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response ->
                 BedrockFormUtil.runSync(() -> sendMainMenu(player, residenceData, ownerFilter)));

@@ -111,7 +111,7 @@ public class BedrockPlayerSelector {
         SimpleForm.Builder form = SimpleForm.builder()
                 .title(title)
                 .content("§f没有可选玩家。")
-                .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+                .button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> BedrockFormUtil.runSync(onBack));
         form.closedResultHandler(() -> BedrockFormUtil.runSync(onBack));

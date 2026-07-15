@@ -31,7 +31,7 @@ public class BedrockPlayerSelectUI {
         form.content("§f请选择玩家来源：");
         form.button("§a从在线玩家中选择", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
         form.button("§e从全部玩家中选择", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
@@ -82,12 +82,12 @@ public class BedrockPlayerSelectUI {
         boolean hasNext = page < totalPages - 1;
 
         if (hasPrev) {
-            form.button("§0上一页", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            form.button("§0上一页", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
         }
         if (hasNext) {
-            form.button("§0下一页", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+            form.button("§0下一页", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
         }
-        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.BUTTON_ICON);
+        form.button("§0返回", FormImage.Type.PATH, BedrockFormUtil.menuIcon("lastpage"));
 
         form.validResultHandler(response -> {
             int clicked = response.clickedButtonId();
